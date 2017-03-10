@@ -1,0 +1,14 @@
+pv
+libc6
+debconf
+perl-base
+dpkg
+libbz2-1.0
+multiarch-support
+liblzma5
+libselinux1
+tar
+zlib1g
+debconf-2.0
+libgcc1
+gcc-4.7-base
