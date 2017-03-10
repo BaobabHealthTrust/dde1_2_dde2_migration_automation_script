@@ -1122,7 +1122,7 @@ elif [ ${#OPENMRS_SRC} -ne 0 ] && [ "$OPENMRS_SRC" == "server" ]; then
 
 	fi
 
-	getUserData "Environment Configuration" "MySQL OpenMRS Database Configuration" "Enter MySQL DDE1 proxy database name of the instance on '$MYSQL_OPENMRS_HOST': ";
+	getUserData "Environment Configuration" "MySQL OpenMRS Database Configuration" "Enter MySQL OpenMRS database name of the instance on '$MYSQL_OPENMRS_HOST': ";
 
 	OPENMRS_DATABASE=$RETVAL;
 
