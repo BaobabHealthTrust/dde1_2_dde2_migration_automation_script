@@ -1231,6 +1231,64 @@ if [ $? -ne 0 ]; then
 
 fi
 
+cp "$ROOT/sources/dde2_migration_validator/config/couchdb.yml.example" "$ROOT/sources/dde2_migration_validator/config/couchdb.yml";
+
+if [ $? -ne 0 ]; then
+
+	exit 1;
+
+fi
+
+DDE1_PROXY_PREFIX="";
+DDE1_PROXY_SUFFIX="";
+
+ARR=$(echo "$DDE1_PROXY_DATABASE" | tr "_" "\n");
+
+j=0;
+
+for i in ARR; do
+
+	if [ $j -eq 0 ]; then
+	
+		DDE1_PROXY_PREFIX="$i";
+	
+	else
+	
+		if [ ${#DDE1_PROXY_SUFFIX} -gt 0 ]; then
+		
+			DDE1_PROXY_SUFFIX="$DDE1_PROXY_SUFFIX""_""$i";
+		
+		else
+		
+			DDE1_PROXY_SUFFIX="$i";
+		
+		fi
+	
+	fi
+
+done
+
+ruby -ryaml -e 'config = YAML.load_file("'$ROOT'/sources/dde2_migration_validator/config/couchdb.yml"); \
+								config["production"]["username"] = "'$MYSQL_DDE1_PROXY_USERNAME'"; \
+								config["production"]["password"] = "'$MYSQL_DDE1_PROXY_PASSWORD'"; \
+								config["production"]["host"] = "'$MYSQL_DDE1_PROXY_HOST'"; \
+								config["production"]["prefix"] = "'$DDE1_PROXY_PREFIX'"; \
+								config["production"]["suffix"] = "'$DDE1_PROXY_SUFFIX'"; \
+								config["development"]["username"] = "'$MYSQL_DDE1_PROXY_USERNAME'"; \
+								config["development"]["password"] = "'$MYSQL_DDE1_PROXY_PASSWORD'"; \
+								config["development"]["host"] = "'$MYSQL_DDE1_PROXY_HOST'"; \
+								config["development"]["prefix"] = "'$DDE1_PROXY_PREFIX'"; \
+								config["development"]["suffix"] = "'$DDE1_PROXY_SUFFIX'"; \
+								file = File.open("'$ROOT'/sources/dde2_migration_validator/config/couchdb.yml", "w"); \
+								file.write(config.to_yaml); \
+								file.close;'
+
+if [ $? -ne 0 ]; then
+
+	exit 1;
+
+fi
+
 cp "$ROOT/sources/dde2_migration_validator/config/database.yml.example" "$ROOT/sources/dde2_migration_validator/config/database.yml";
 
 if [ $? -ne 0 ]; then
@@ -1239,7 +1297,7 @@ if [ $? -ne 0 ]; then
 
 fi
 
-ruby -ryaml -e 'config = YAML.load_file("'$ROOT'/sources/dde2_migration_validator/config/databases.yml"); \
+ruby -ryaml -e 'config = YAML.load_file("'$ROOT'/sources/dde2_migration_validator/config/database.yml"); \
 								config["production"]["username"] = "'$MYSQL_DDE1_PROXY_USERNAME'"; \
 								config["production"]["password"] = "'$MYSQL_DDE1_PROXY_PASSWORD'"; \
 								config["production"]["host"] = "'$MYSQL_DDE1_PROXY_HOST'"; \
@@ -1248,7 +1306,7 @@ ruby -ryaml -e 'config = YAML.load_file("'$ROOT'/sources/dde2_migration_validato
 								config["development"]["password"] = "'$MYSQL_DDE1_PROXY_PASSWORD'"; \
 								config["development"]["host"] = "'$MYSQL_DDE1_PROXY_HOST'"; \
 								config["development"]["database"] = "'$DDE1_PROXY_DATABASE'"; \
-								file = File.open("'$ROOT'/sources/dde2_migration_validator/config/databases.yml", "w"); \
+								file = File.open("'$ROOT'/sources/dde2_migration_validator/config/database.yml", "w"); \
 								file.write(config.to_yaml); \
 								file.close;'
 
