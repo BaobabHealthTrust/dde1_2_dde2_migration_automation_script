@@ -1343,9 +1343,11 @@ if [ $? -ne 0 ]; then
 
 fi
 
-getUserData "Environment Configuration" "Master CouchDB Connection Setup" "Enter Master CouchDB database name: ";
+# getUserData "Environment Configuration" "Master CouchDB Connection Setup" "Enter Master CouchDB database name: ";
 
-MASTER_COUCHDB_DATABASE=$RETVAL;
+MASTER_COUCHDB_DATABASE="dde_production";
+
+MASTER_COUCHDB_PERSON_DATABASE="dde_person_production";
 
 clear
 
@@ -1389,7 +1391,15 @@ fi
 
 clear
   
-curl -­H "Content-­Type: application/json" -­X POST -­d '{"target":"http://'$COUCHDB_HOST':'$COUCHDB_PORT'/'$COUCHDB_DATABASE'","source":"http://'$MASTER_COUCHDB_HOST':'$MASTER_COUCHDB_PORT'/'$MASTER_COUCHDB_DATABASE'", "create_target": true}' "http://'$COUCHDB_DATABASE_USERNAME':'$COUCHDB_DATABASE_PASSWORD'@'$COUCHDB_HOST':'$COUCHDB_PORT'/_replicate";
+curl -H "Content-Type: application/json" -X POST --data "{\"target\":\"$DDE1_PROXY_DATABASE\",\"source\":\"http://$MASTER_COUCHDB_HOST:$MASTER_COUCHDB_PORT/$MASTER_COUCHDB_DATABASE\", \"create_target\": true}" "http://$COUCHDB_DATABASE_USERNAME:$COUCHDB_DATABASE_PASSWORD@$COUCHDB_HOST:$COUCHDB_PORT/_replicate";
+
+if [ $? -ne 0 ]; then
+
+	exit 1;
+
+fi
+
+curl -H "Content-Type: application/json" -X POST --data "{\"target\":\""$DDE1_PROXY_PREFIX"_person_$DDE1_PROXY_SUFFIX\",\"source\":\"http://$MASTER_COUCHDB_HOST:$MASTER_COUCHDB_PORT/$MASTER_COUCHDB_PERSON_DATABASE\", \"create_target\": true}" "http://$COUCHDB_DATABASE_USERNAME:$COUCHDB_DATABASE_PASSWORD@$COUCHDB_HOST:$COUCHDB_PORT/_replicate";
 
 if [ $? -ne 0 ]; then
 
@@ -1407,7 +1417,7 @@ fi
 
 fuser -k $VALIDATOR_PORT/tcp;
 
-rails -s -p $VALIDATOR_PORT -d;
+rails s -p $VALIDATOR_PORT -d;
 
 if [ $? -ne 0 ]; then
 
