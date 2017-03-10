@@ -1389,7 +1389,7 @@ fi
 
 clear
   
-curl -­H "Content­Type: application/json" -­X POST -­d '{"target":"http://'$COUCHDB_HOST':'$COUCHDB_PORT'/'$COUCHDB_DATABASE'","source":"http://'$MASTER_COUCHDB_HOST':'$MASTER_COUCHDB_PORT'/'$MASTER_COUCHDB_DATABASE'", "create_target": true}' "http://'$COUCHDB_DATABASE_USERNAME':'$COUCHDB_DATABASE_PASSWORD'@'$COUCHDB_HOST':'$COUCHDB_PORT'/_replicate";
+curl -­H "Content-­Type: application/json" -­X POST -­d '{"target":"http://'$COUCHDB_HOST':'$COUCHDB_PORT'/'$COUCHDB_DATABASE'","source":"http://'$MASTER_COUCHDB_HOST':'$MASTER_COUCHDB_PORT'/'$MASTER_COUCHDB_DATABASE'", "create_target": true}' "http://'$COUCHDB_DATABASE_USERNAME':'$COUCHDB_DATABASE_PASSWORD'@'$COUCHDB_HOST':'$COUCHDB_PORT'/_replicate";
 
 if [ $? -ne 0 ]; then
 
