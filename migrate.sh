@@ -1246,7 +1246,7 @@ ARR=$(echo "$DDE1_PROXY_DATABASE" | tr "_" "\n");
 
 j=0;
 
-for i in ARR; do
+for i in $ARR; do
 
 	if [ $j -eq 0 ]; then
 	
