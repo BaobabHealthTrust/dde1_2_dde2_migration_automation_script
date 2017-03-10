@@ -265,6 +265,22 @@ if [ ${#RVM} == 0 ]; then
 	
 	fi
 	
+	cd "$ROOT/dist/rvm-ruby";
+	
+	if [ $? -ne 0 ]; then
+	
+		exit 1;
+	
+	fi
+		
+	gem install bundler-1.6.2.gem;
+	
+	if [ $? -ne 0 ]; then
+	
+		exit 1;
+	
+	fi		
+	
 	cd "$ROOT";
 	
 fi
