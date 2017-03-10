@@ -1140,12 +1140,6 @@ fi
 
 bundle install --local;
 
-if [ $? -ne 0 ]; then
-
-	exit 1;
-
-fi
-
 clear;
 
 cp "$ROOT/sources/dde2_migration_tool/code/databases.yml.example" "$ROOT/sources/dde2_migration_tool/code/databases.yml";
@@ -1220,12 +1214,6 @@ if [ $? -ne 0 ]; then
 fi
 
 bundle install --local;
-
-if [ $? -ne 0 ]; then
-
-	exit 1;
-
-fi
 
 cp "$ROOT/sources/dde2_migration_validator/config/secrets.yml.example" "$ROOT/sources/dde2_migration_validator/config/secrets.yml";
 
