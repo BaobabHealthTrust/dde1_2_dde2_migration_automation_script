@@ -305,6 +305,10 @@ if [ ${#RVM} -gt 0 ] && [ ${#RUBY} == 0 ]; then
 		
 	rvm --verify-downloads 2 --disable-binary install 2.1.2 --rubygems 2.2.2;
 		
+	/bin/bash --login;
+	
+	rvm --default use 2.1.2;
+		
 	cd "$ROOT/dist/rvm-ruby";
 	
 	if [ $? -ne 0 ]; then
