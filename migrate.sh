@@ -1503,6 +1503,8 @@ if [ "$SYNC_WITH_MASTER" == "y" ]; then
 
 	if [ -d ./data ]; then
 
+		echo "Done. Can delete folder now";
+		
 		# rm -rf ./data;
 
 	fi
