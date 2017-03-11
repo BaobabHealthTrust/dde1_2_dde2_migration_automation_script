@@ -573,7 +573,7 @@ if [ ${#GIT} -gt 0 ]; then
 	
 		cd "$ROOT/sources/dde2_migration_tool";
 	
-		git pull https://github.com/BaobabHealthTrust/dde2_migration_tool.git;
+		# git pull https://github.com/BaobabHealthTrust/dde2_migration_tool.git;
 	
 		cd "$ROOT";
 	
@@ -597,7 +597,7 @@ if [ ${#GIT} -gt 0 ]; then
 	
 		cd "$ROOT/sources/dde2_migration_validator";
 	
-		git pull https://github.com/BaobabHealthTrust/dde2_migration_validator.git;
+		# git pull https://github.com/BaobabHealthTrust/dde2_migration_validator.git;
 	
 		cd "$ROOT";
 	
