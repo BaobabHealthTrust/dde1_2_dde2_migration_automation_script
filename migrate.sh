@@ -259,6 +259,8 @@ if [ ${#RVM} == 0 ]; then
 	
 	source ~/.rvm/scripts/rvm;
 	
+	source ~/.bashrc;
+	
 	RVM=$(command -v rvm);
 
 	if [ ${#RVM} == 0 ]; then
@@ -266,22 +268,6 @@ if [ ${#RVM} == 0 ]; then
 		exit 1;
 	
 	fi
-	
-	cd "$ROOT/dist/rvm-ruby";
-	
-	if [ $? -ne 0 ]; then
-	
-		exit 1;
-	
-	fi
-		
-	gem install bundler-1.6.2.gem;
-	
-	if [ $? -ne 0 ]; then
-	
-		exit 1;
-	
-	fi		
 	
 	cd "$ROOT";
 	
@@ -319,6 +305,24 @@ if [ ${#RVM} -gt 0 ] && [ ${#RUBY} == 0 ]; then
 		
 	rvm --verify-downloads 2 --disable-binary install 2.1.2 --rubygems 2.2.2;
 		
+	cd "$ROOT/dist/rvm-ruby";
+	
+	if [ $? -ne 0 ]; then
+	
+		exit 1;
+	
+	fi
+		
+	gem install bundler-1.6.2.gem;
+	
+	if [ $? -ne 0 ]; then
+	
+		exit 1;
+	
+	fi		
+	
+	cd "$ROOT";
+	
 fi
 
 if [ ${#MYSQL} == 0 ]; then
