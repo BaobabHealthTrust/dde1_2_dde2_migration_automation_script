@@ -1091,7 +1091,6 @@ ruby -ryaml -e 'config = YAML.load_file("'$ROOT'/sources/dde2_migration_tool/cod
 								config["mysql"]["username"] = "'$MYSQL_OPENMRS_USERNAME'"; \
 								config["mysql"]["password"] = "'$MYSQL_OPENMRS_PASSWORD'"; \
 								config["mysql"]["host"] = "'$MYSQL_OPENMRS_HOST'"; \
-								config["mysql"]["database"] = "'$OPENMRS_DATABASE'"; \
 								config["couchdb"]= { \
 																		"username" => "'$COUCHDB_DATABASE_USERNAME'", \
 																		"password" => "'$COUCHDB_DATABASE_PASSWORD'", \
