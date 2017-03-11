@@ -215,103 +215,15 @@ if [ ${#PV} == 0 ]; then
 
 fi
 
-if [ ${#RVM} == 0 ]; then
-
-	cd "$ROOT/dist/rvm-ruby/deps/";
-	
-	if [ $? -ne 0 ]; then
-	
-		exit 1;
-	
-	fi
-	
-	sudo dpkg -i --force-depends *.deb;
-
-	if [ $? -ne 0 ]; then
-	
-		exit 1;
-	
-	fi
-	
-	cd "$ROOT/dist/rvm-ruby/rvm/";
-	
-	if [ $? -ne 0 ]; then
-	
-		exit 1;
-	
-	fi
-		
-	if [ ! -f "$ROOT/dist/rvm-ruby/rvm/install" ] && [ -f "$ROOT/dist/rvm-ruby/rvm/scripts/install" ]; then
-	
-		ln -s "$ROOT/dist/rvm-ruby/rvm/scripts/install" .;
-	
-	fi
-	
-	if [ $? -ne 0 ]; then
-	
-		exit 1;
-	
-	fi
-		
-	chmod +x "$ROOT/dist/rvm-ruby/rvm/install";
-	
-	./install --auto-dotfiles;
-	
-	source ~/.rvm/scripts/rvm;
-	
-	source ~/.bashrc;
-	
-	RVM=$(command -v rvm);
-
-	if [ ${#RVM} == 0 ]; then
-	
-		exit 1;
-	
-	fi
-	
-	cd "$ROOT";
-	
-fi
-
-if [ ${#RVM} -gt 0 ] && [ ${#RUBY} == 0 ]; then
+if [ ${#RUBY} == 0 ]; then
 
   showMessageBox "Environment Configuration" "Ruby Setup" "Ruby not found. Installing Ruby.";
 
 	clear;
 	
-	cp "$ROOT/dist/rvm-ruby/ruby-2.1.2.tar.bz2" ~/.rvm/archives/;
-
-	if [ $? -ne 0 ]; then
+	cd "$ROOT/dist/ruby";
 	
-		exit 1;
-	
-	fi
-		
-	cp "$ROOT/dist/rvm-ruby/rubygems-2.2.2.tar.gz" ~/.rvm/archives/;
-
-	if [ $? -ne 0 ]; then
-	
-		exit 1;
-	
-	fi
-		
-	cp "$ROOT/dist/rvm-ruby/yaml-0.1.6.tar.gz" ~/.rvm/archives/;
-
-	if [ $? -ne 0 ]; then
-	
-		exit 1;
-	
-	fi
-		
-	rvm --verify-downloads 2 --disable-binary install 2.1.2 --rubygems 2.2.2;
-		
-	/bin/bash --login;
-	
-	rvm --default use 2.1.2;
-		
-	cd "$ROOT/dist/rvm-ruby";
-	
-	gem install bundler-1.6.2.gem;
+	./setup.sh;
 	
 	if [ $? -ne 0 ]; then
 	
@@ -1185,9 +1097,9 @@ ruby -ryaml -e 'config = YAML.load_file("'$ROOT'/sources/dde2_migration_tool/cod
 																		"password" => "'$COUCHDB_DATABASE_PASSWORD'", \
 																		"host" => "'$COUCHDB_HOST'", \
 																		"port" => '$COUCHDB_PORT'}; \
-								config["target"]["databases"] = "openmrs_application"; \
+								config["target"]["databases"] = "'$OPENMRS_DATABASE'"; \
 								config["applications"] = {}; \
-								config["applications"]["openmrs_application"] = { \
+								config["applications"]["'$OPENMRS_DATABASE'"] = { \
 																		"username" => "'$MYSQL_DDE1_PROXY_USERNAME'", \
 																		"password" => "'$MYSQL_DDE1_PROXY_PASSWORD'", \
 																		"host" => "'$MYSQL_DDE1_PROXY_HOST'", \
@@ -1372,54 +1284,6 @@ if [ "$VALIDATE_MIGRATION" == "y" ]; then
 
 fi
 
-# getUserData "Environment Configuration" "Master CouchDB Connection Setup" "Enter Master CouchDB database name: ";
-
-MASTER_COUCHDB_DATABASE="dde_production";
-
-MASTER_COUCHDB_PERSON_DATABASE="dde_person_production";
-
-clear
-
-getUserData "Environment Configuration" "Master CouchDB Connection Setup" "Enter Master CouchDB database usename: ";
-
-MASTER_COUCHDB_DATABASE_USERNAME=$RETVAL;
-
-clear
-
-getUserPassword "Environment Configuration" "Master CouchDB Connection Setup" "Enter Master CouchDB database password for '$MASTER_COUCHDB_DATABASE_USERNAME': ";
-
-MASTER_COUCHDB_DATABASE_PASSWORD=$RETVAL;
-
-clear
-
-getUserData "Environment Configuration" "Master CouchDB Connection Setup" "Enter Master CouchDB database host [default: $HOST]: ";
-
-MASTER_COUCHDB_HOST=$RETVAL;
-
-if [ ${#MASTER_COUCHDB_HOST} == 0 ]; then
-
-	MASTER_COUCHDB_HOST="$HOST";
-
-else
-
-	HOST=$MASTER_COUCHDB_HOST;
-
-fi
-
-clear
-
-getUserData "Environment Configuration" "Master CouchDB Connection Setup" "Enter Master CouchDB database port [default: 5984]: ";
-
-MASTER_COUCHDB_PORT=$RETVAL;
-
-if [ ${#MASTER_COUCHDB_PORT} == 0 ]; then
-
-	MASTER_COUCHDB_PORT=5984;
-
-fi
-
-clear
-
 getUserConfirmation "Environment Configuration" "DDE2 Master Synchronization" "Would you like to synchronize with DDE2 Master Live Server before proceeding?";
 	
 case $EXIT_CODE in
@@ -1434,6 +1298,52 @@ esac
 clear		
 	
 if [ "$SYNC_WITH_MASTER" == "y" ]; then	
+
+	MASTER_COUCHDB_DATABASE="dde_production";
+
+	MASTER_COUCHDB_PERSON_DATABASE="dde_person_production";
+
+	clear
+
+	getUserData "Environment Configuration" "Master CouchDB Connection Setup" "Enter Master CouchDB database usename: ";
+
+	MASTER_COUCHDB_DATABASE_USERNAME=$RETVAL;
+
+	clear
+
+	getUserPassword "Environment Configuration" "Master CouchDB Connection Setup" "Enter Master CouchDB database password for '$MASTER_COUCHDB_DATABASE_USERNAME': ";
+
+	MASTER_COUCHDB_DATABASE_PASSWORD=$RETVAL;
+
+	clear
+
+	getUserData "Environment Configuration" "Master CouchDB Connection Setup" "Enter Master CouchDB database host [default: $HOST]: ";
+
+	MASTER_COUCHDB_HOST=$RETVAL;
+
+	if [ ${#MASTER_COUCHDB_HOST} == 0 ]; then
+
+		MASTER_COUCHDB_HOST="$HOST";
+
+	else
+
+		HOST=$MASTER_COUCHDB_HOST;
+
+	fi
+
+	clear
+
+	getUserData "Environment Configuration" "Master CouchDB Connection Setup" "Enter Master CouchDB database port [default: 5984]: ";
+
+	MASTER_COUCHDB_PORT=$RETVAL;
+
+	if [ ${#MASTER_COUCHDB_PORT} == 0 ]; then
+
+		MASTER_COUCHDB_PORT=5984;
+
+	fi
+
+	clear
 
 	RESULT=$(mysql -h $MYSQL_DDE1_PROXY_HOST -u $MYSQL_DDE1_PROXY_USERNAME -p$MYSQL_DDE1_PROXY_PASSWORD $DDE1_PROXY_DATABASE -e "SELECT COUNT(*) AS num FROM national_patient_identifiers"); 
 
