@@ -1390,16 +1390,76 @@ if [ ${#MASTER_COUCHDB_PORT} == 0 ]; then
 fi
 
 clear
-  
-curl -H "Content-Type: application/json" -X POST --data "{\"target\":\"$DDE1_PROXY_DATABASE\",\"source\":\"http://$MASTER_COUCHDB_HOST:$MASTER_COUCHDB_PORT/$MASTER_COUCHDB_DATABASE\", \"create_target\": true}" "http://$COUCHDB_DATABASE_USERNAME:$COUCHDB_DATABASE_PASSWORD@$COUCHDB_HOST:$COUCHDB_PORT/_replicate";
 
-if [ $? -ne 0 ]; then
+RESULT=$(mysql -h $MYSQL_DDE1_PROXY_HOST -u $MYSQL_DDE1_PROXY_USERNAME -p$MYSQL_DDE1_PROXY_PASSWORD $DDE1_PROXY_DATABASE -e "SELECT COUNT(*) AS num FROM national_patient_identifiers"); 
 
-	exit 1;
+TMP=$(echo $RESULT | tr -d "num\ ");
+
+COUNT=$(echo "${TMP}" | tr -d '[:space:]');
+
+GROUPSIZE=200;
+
+TOTAL_GROUPS=$(echo $( expr $COUNT / $GROUPSIZE ));
+
+REMAINDER=$(($COUNT % $GROUPSIZE));
+
+if [ $REMAINDER -gt 0 ]; then
+
+	TOTAL=$(expr $TOTAL_GROUPS + 1);
+
+else
+
+	TOTAL=$TOTAL_GROUPS;
 
 fi
 
-curl -H "Content-Type: application/json" -X POST --data "{\"target\":\""$DDE1_PROXY_PREFIX"_person_$DDE1_PROXY_SUFFIX\",\"source\":\"http://$MASTER_COUCHDB_HOST:$MASTER_COUCHDB_PORT/$MASTER_COUCHDB_PERSON_DATABASE\", \"create_target\": true}" "http://$COUCHDB_DATABASE_USERNAME:$COUCHDB_DATABASE_PASSWORD@$COUCHDB_HOST:$COUCHDB_PORT/_replicate";
+ROUNDS=$(seq 0 1 $TOTAL_GROUPS);
+
+if [ -d ./data ]; then
+
+	rm -rf ./data;
+
+fi
+
+mkdir -p "$ROOT/data";
+
+for ROUND in $ROUNDS; do
+
+	echo "Round $( expr $ROUND + 1 ) of $( expr $TOTAL_GROUPS + 1 )";
+
+	START=$((GROUPSIZE * ROUND));
+
+	RESULT=$(mysql -h $MYSQL_DDE1_PROXY_HOST -u $MYSQL_DDE1_PROXY_USERNAME -p$MYSQL_DDE1_PROXY_PASSWORD $DDE1_PROXY_DATABASE -e "SELECT value FROM national_patient_identifiers LIMIT $START, $GROUPSIZE"); 
+
+	CHOPPED=$(echo $RESULT | tr "value\ " "\ ");
+
+	ARR=$(echo $CHOPPED | tr "\ " "\n");
+
+	JSON=$(printf %s\\n "${ARR[@]}"|sed 's/["\]/\\&/g;s/.*/"&"/;1s/^/[/;$s/$/]/;$!s/$/,/');
+
+	URLENCODED=$(ruby -rcgi -e 'puts CGI.escape(ARGV[0])' "$JSON");
+	
+	curl -s "http://$MASTER_COUCHDB_HOST:$MASTER_COUCHDB_PORT/$MASTER_COUCHDB_DATABASE/_design/Npid/_view/by_national_id?reduce=false&include_docs=true&keys=$URLENCODED" -o "$ROOT/data/$ROUND.json"; 
+
+	NPIDS=$(ruby -rjson -e "r = []; j = JSON.parse(File.open('$ROOT/data/$ROUND.json', 'r').read); j['rows'].map.each{|e| r << e['doc']['_id']}; puts r.to_json")
+
+	curl -s -H "Content-Type: application/json" -X POST --data "{\"target\":\"$DDE1_PROXY_DATABASE\",\"source\":\"http://$MASTER_COUCHDB_HOST:$MASTER_COUCHDB_PORT/$MASTER_COUCHDB_DATABASE\", \"create_target\": true, \"doc_ids\":$NPIDS}" "http://$COUCHDB_DATABASE_USERNAME:$COUCHDB_DATABASE_PASSWORD@$COUCHDB_HOST:$COUCHDB_PORT/_replicate" -o "$ROOT/data/n.$ROUND.json" &
+
+	curl -s -H "Content-Type: application/json" -X POST --data "{\"target\":\""$DDE1_PROXY_PREFIX"_person_$DDE1_PROXY_SUFFIX\",\"source\":\"http://$MASTER_COUCHDB_HOST:$MASTER_COUCHDB_PORT/$MASTER_COUCHDB_PERSON_DATABASE\", \"create_target\": true, \"doc_ids\":$JSON}" "http://$COUCHDB_DATABASE_USERNAME:$COUCHDB_DATABASE_PASSWORD@$COUCHDB_HOST:$COUCHDB_PORT/_replicate" -o "$ROOT/data/p.$ROUND.json" &
+
+done
+
+while ps axg | grep -vw grep | grep -w curl > /dev/null; do
+
+	sleep 1;
+	
+done
+
+if [ -d ./data ]; then
+
+	# rm -rf ./data;
+
+fi
 
 if [ $? -ne 0 ]; then
 
