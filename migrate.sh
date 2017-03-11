@@ -28,6 +28,8 @@ HOST="$IP_ADDRESS";
 COUCHDB_PORT="5984";
 COUCHDB_HOST="$HOST";
 	
+VALIDATE_MIGRATION="n";
+	
 getUserChecks()
 {
 	exec 3>&1
@@ -551,6 +553,19 @@ if [ ! -d "$ROOT/sources" ]; then
 
 fi
 
+getUserConfirmation "Environment Configuration" "Migration Validation Confirmation" "Would you want to validate the migration as well?";
+	
+case $EXIT_CODE in
+	0)
+		VALIDATE_MIGRATION="y";;
+	1)
+		VALIDATE_MIGRATION="n";;
+	255)
+		VALIDATE_MIGRATION="n";;
+esac
+
+clear		
+
 # If Git installed and tool source files not found, download else update if new 
 # changes exist online 
 if [ ${#GIT} -gt 0 ]; then
@@ -579,27 +594,31 @@ if [ ${#GIT} -gt 0 ]; then
 	
 	fi
 
-	if [ ! -d "$ROOT/sources/dde2_migration_validator" ]; then
+	if [ "$VALIDATE_MIGRATION" == "y" ]; then
 	
-		cd "$ROOT/sources";
+		if [ ! -d "$ROOT/sources/dde2_migration_validator" ]; then
+	
+			cd "$ROOT/sources";
 		
-		if [ $? -ne 0 ]; then
+			if [ $? -ne 0 ]; then
 		
-			exit 1;
+				exit 1;
 			
+			else
+		
+				git clone https://github.com/BaobabHealthTrust/dde2_migration_validator.git;						
+		
+			fi
+	
 		else
-		
-			git clone https://github.com/BaobabHealthTrust/dde2_migration_validator.git;						
-		
+	
+			cd "$ROOT/sources/dde2_migration_validator";
+	
+			# git pull https://github.com/BaobabHealthTrust/dde2_migration_validator.git;
+	
+			cd "$ROOT";
+	
 		fi
-	
-	else
-	
-		cd "$ROOT/sources/dde2_migration_validator";
-	
-		# git pull https://github.com/BaobabHealthTrust/dde2_migration_validator.git;
-	
-		cd "$ROOT";
 	
 	fi
 
@@ -1205,40 +1224,6 @@ if [ $? -ne 0 ]; then
 
 fi
 
-cd "$ROOT/sources/dde2_migration_validator";
-
-if [ $? -ne 0 ]; then
-
-	exit 1;
-
-fi
-
-bundle install --local;
-
-cp "$ROOT/sources/dde2_migration_validator/config/secrets.yml.example" "$ROOT/sources/dde2_migration_validator/config/secrets.yml";
-
-if [ $? -ne 0 ]; then
-
-	exit 1;
-
-fi
-
-rake secret;
-
-if [ $? -ne 0 ]; then
-
-	exit 1;
-
-fi
-
-cp "$ROOT/sources/dde2_migration_validator/config/couchdb.yml.example" "$ROOT/sources/dde2_migration_validator/config/couchdb.yml";
-
-if [ $? -ne 0 ]; then
-
-	exit 1;
-
-fi
-
 DDE1_PROXY_PREFIX="";
 DDE1_PROXY_SUFFIX="";
 
@@ -1268,78 +1253,116 @@ for i in $ARR; do
 
 done
 
-ruby -ryaml -e 'config = YAML.load_file("'$ROOT'/sources/dde2_migration_validator/config/couchdb.yml"); \
-								config["production"]["username"] = "'$MYSQL_DDE1_PROXY_USERNAME'"; \
-								config["production"]["password"] = "'$MYSQL_DDE1_PROXY_PASSWORD'"; \
-								config["production"]["host"] = "'$MYSQL_DDE1_PROXY_HOST'"; \
-								config["production"]["prefix"] = "'$DDE1_PROXY_PREFIX'"; \
-								config["production"]["suffix"] = "'$DDE1_PROXY_SUFFIX'"; \
-								config["development"]["username"] = "'$MYSQL_DDE1_PROXY_USERNAME'"; \
-								config["development"]["password"] = "'$MYSQL_DDE1_PROXY_PASSWORD'"; \
-								config["development"]["host"] = "'$MYSQL_DDE1_PROXY_HOST'"; \
-								config["development"]["prefix"] = "'$DDE1_PROXY_PREFIX'"; \
-								config["development"]["suffix"] = "'$DDE1_PROXY_SUFFIX'"; \
-								file = File.open("'$ROOT'/sources/dde2_migration_validator/config/couchdb.yml", "w"); \
-								file.write(config.to_yaml); \
-								file.close;'
+if [ "$VALIDATE_MIGRATION" == "y" ]; then	
 
-if [ $? -ne 0 ]; then
+	cd "$ROOT/sources/dde2_migration_validator";
 
-	exit 1;
+	if [ $? -ne 0 ]; then
 
-fi
+		exit 1;
 
-cp "$ROOT/sources/dde2_migration_validator/config/database.yml.example" "$ROOT/sources/dde2_migration_validator/config/database.yml";
+	fi
 
-if [ $? -ne 0 ]; then
+	bundle install --local;
 
-	exit 1;
+	cp "$ROOT/sources/dde2_migration_validator/config/secrets.yml.example" "$ROOT/sources/dde2_migration_validator/config/secrets.yml";
 
-fi
+	if [ $? -ne 0 ]; then
 
-ruby -ryaml -e 'config = YAML.load_file("'$ROOT'/sources/dde2_migration_validator/config/database.yml"); \
-								config["production"]["username"] = "'$MYSQL_DDE1_PROXY_USERNAME'"; \
-								config["production"]["password"] = "'$MYSQL_DDE1_PROXY_PASSWORD'"; \
-								config["production"]["host"] = "'$MYSQL_DDE1_PROXY_HOST'"; \
-								config["production"]["database"] = "'$DDE1_PROXY_DATABASE'"; \
-								config["development"]["username"] = "'$MYSQL_DDE1_PROXY_USERNAME'"; \
-								config["development"]["password"] = "'$MYSQL_DDE1_PROXY_PASSWORD'"; \
-								config["development"]["host"] = "'$MYSQL_DDE1_PROXY_HOST'"; \
-								config["development"]["database"] = "'$DDE1_PROXY_DATABASE'"; \
-								file = File.open("'$ROOT'/sources/dde2_migration_validator/config/database.yml", "w"); \
-								file.write(config.to_yaml); \
-								file.close;'
+		exit 1;
 
-if [ $? -ne 0 ]; then
+	fi
 
-	exit 1;
+	rake secret;
 
-fi
+	if [ $? -ne 0 ]; then
 
-cp "$ROOT/sources/dde2_migration_validator/config/site_config.yml.example" "$ROOT/sources/dde2_migration_validator/config/site_config.yml";
+		exit 1;
 
-if [ $? -ne 0 ]; then
+	fi
 
-	exit 1;
+	cp "$ROOT/sources/dde2_migration_validator/config/couchdb.yml.example" "$ROOT/sources/dde2_migration_validator/config/couchdb.yml";
 
-fi
+	if [ $? -ne 0 ]; then
 
-getUserData "Environment Configuration" "DDE Connection" "Enter site code: ";
+		exit 1;
 
-SITE_CODE=$RETVAL;
+	fi
 
-clear			
+	ruby -ryaml -e 'config = YAML.load_file("'$ROOT'/sources/dde2_migration_validator/config/couchdb.yml"); \
+									config["production"]["username"] = "'$MYSQL_DDE1_PROXY_USERNAME'"; \
+									config["production"]["password"] = "'$MYSQL_DDE1_PROXY_PASSWORD'"; \
+									config["production"]["host"] = "'$MYSQL_DDE1_PROXY_HOST'"; \
+									config["production"]["prefix"] = "'$DDE1_PROXY_PREFIX'"; \
+									config["production"]["suffix"] = "'$DDE1_PROXY_SUFFIX'"; \
+									config["development"]["username"] = "'$MYSQL_DDE1_PROXY_USERNAME'"; \
+									config["development"]["password"] = "'$MYSQL_DDE1_PROXY_PASSWORD'"; \
+									config["development"]["host"] = "'$MYSQL_DDE1_PROXY_HOST'"; \
+									config["development"]["prefix"] = "'$DDE1_PROXY_PREFIX'"; \
+									config["development"]["suffix"] = "'$DDE1_PROXY_SUFFIX'"; \
+									file = File.open("'$ROOT'/sources/dde2_migration_validator/config/couchdb.yml", "w"); \
+									file.write(config.to_yaml); \
+									file.close;'
 
-ruby -ryaml -e 'config = YAML.load_file("'$ROOT'/sources/dde2_migration_validator/config/site_config.yml"); \
-								config["production"]["site_code"] = "'$SITE_CODE'"; \
-								config["development"]["password"] = "'$SITE_CODE'"; \
-								file = File.open("'$ROOT'/sources/dde2_migration_validator/config/site_config.yml", "w"); \
-								file.write(config.to_yaml); \
-								file.close;'
+	if [ $? -ne 0 ]; then
 
-if [ $? -ne 0 ]; then
+		exit 1;
 
-	exit 1;
+	fi
+
+	cp "$ROOT/sources/dde2_migration_validator/config/database.yml.example" "$ROOT/sources/dde2_migration_validator/config/database.yml";
+
+	if [ $? -ne 0 ]; then
+
+		exit 1;
+
+	fi
+
+	ruby -ryaml -e 'config = YAML.load_file("'$ROOT'/sources/dde2_migration_validator/config/database.yml"); \
+									config["production"]["username"] = "'$MYSQL_DDE1_PROXY_USERNAME'"; \
+									config["production"]["password"] = "'$MYSQL_DDE1_PROXY_PASSWORD'"; \
+									config["production"]["host"] = "'$MYSQL_DDE1_PROXY_HOST'"; \
+									config["production"]["database"] = "'$DDE1_PROXY_DATABASE'"; \
+									config["development"]["username"] = "'$MYSQL_DDE1_PROXY_USERNAME'"; \
+									config["development"]["password"] = "'$MYSQL_DDE1_PROXY_PASSWORD'"; \
+									config["development"]["host"] = "'$MYSQL_DDE1_PROXY_HOST'"; \
+									config["development"]["database"] = "'$DDE1_PROXY_DATABASE'"; \
+									file = File.open("'$ROOT'/sources/dde2_migration_validator/config/database.yml", "w"); \
+									file.write(config.to_yaml); \
+									file.close;'
+
+	if [ $? -ne 0 ]; then
+
+		exit 1;
+
+	fi
+
+	cp "$ROOT/sources/dde2_migration_validator/config/site_config.yml.example" "$ROOT/sources/dde2_migration_validator/config/site_config.yml";
+
+	if [ $? -ne 0 ]; then
+
+		exit 1;
+
+	fi
+
+	getUserData "Environment Configuration" "DDE Connection" "Enter site code: ";
+
+	SITE_CODE=$RETVAL;
+
+	clear			
+
+	ruby -ryaml -e 'config = YAML.load_file("'$ROOT'/sources/dde2_migration_validator/config/site_config.yml"); \
+									config["production"]["site_code"] = "'$SITE_CODE'"; \
+									config["development"]["password"] = "'$SITE_CODE'"; \
+									file = File.open("'$ROOT'/sources/dde2_migration_validator/config/site_config.yml", "w"); \
+									file.write(config.to_yaml); \
+									file.close;'
+
+	if [ $? -ne 0 ]; then
+
+		exit 1;
+
+	fi
 
 fi
 
@@ -1467,45 +1490,49 @@ if [ $? -ne 0 ]; then
 
 fi
 
-cd "$ROOT/sources/dde2_migration_validator";
+if [ "$VALIDATE_MIGRATION" == "y" ]; then	
 
-if [ $? -ne 0 ]; then
+	cd "$ROOT/sources/dde2_migration_validator";
 
-	exit 1;
-
-fi
-
-fuser -k $VALIDATOR_PORT/tcp;
-
-rails s -p $VALIDATOR_PORT -d;
-
-if [ $? -ne 0 ]; then
-
-	exit 1;
-
-fi
-
-if [ ${#FIREFOX} -gt 0 ]; then
-
-	$FIREFOX http://$IP_ADDRESS:$VALIDATOR_PORT/people/premigration;
-	
 	if [ $? -ne 0 ]; then
 
 		exit 1;
 
 	fi
 
-else
+	fuser -k $VALIDATOR_PORT/tcp;
 
-	showMessageBox "DDE1 to DDE2 Migration" "Pre-Migration Report" "In your browser, navigate to 'http://$IP_ADDRESS:$VALIDATOR_PORT/people/premigration' for the pre-migration report";
+	rails s -p $VALIDATOR_PORT -d;
+
+	if [ $? -ne 0 ]; then
+
+		exit 1;
+
+	fi
+
+	if [ ${#FIREFOX} -gt 0 ]; then
+
+		$FIREFOX http://$IP_ADDRESS:$VALIDATOR_PORT/people/premigration;
+	
+		if [ $? -ne 0 ]; then
+
+			exit 1;
+
+		fi
+
+	else
+
+		showMessageBox "DDE1 to DDE2 Migration" "Pre-Migration Report" "In your browser, navigate to 'http://$IP_ADDRESS:$VALIDATOR_PORT/people/premigration' for the pre-migration report";
+
+		clear;	
+	
+	fi
+
+	showMessageBox "DDE1 to DDE2 Migration" "Migration Starting" "The actual migration will now start. Please note that this may take a while but progress will be shown on the way!";
 
 	clear;	
-	
+
 fi
-
-showMessageBox "DDE1 to DDE2 Migration" "Migration Starting" "The actual migration will now start. Please note that this may take a while but progress will be shown on the way!";
-
-clear;	
 
 cd "$ROOT/sources/dde2_migration_tool/code";
 
@@ -1523,27 +1550,31 @@ if [ $? -ne 0 ]; then
 
 fi
 
-if [ ${#FIREFOX} -gt 0 ]; then
+if [ "$VALIDATE_MIGRATION" == "y" ]; then	
 
-	$FIREFOX http://$IP_ADDRESS:$VALIDATOR_PORT/people/postmigration;
+	if [ ${#FIREFOX} -gt 0 ]; then
+
+		$FIREFOX http://$IP_ADDRESS:$VALIDATOR_PORT/people/postmigration;
 	
-	if [ $? -ne 0 ]; then
+		if [ $? -ne 0 ]; then
 
-		exit 1;
+			exit 1;
 
+		fi
+
+	else
+
+		showMessageBox "DDE1 to DDE2 Migration" "Post-Migration Report" "In your browser, navigate to 'http://$IP_ADDRESS:$VALIDATOR_PORT/people/postmigration' for the post-migration report";
+
+		clear;	
+	
 	fi
 
-else
-
-	showMessageBox "DDE1 to DDE2 Migration" "Post-Migration Report" "In your browser, navigate to 'http://$IP_ADDRESS:$VALIDATOR_PORT/people/postmigration' for the post-migration report";
+	showMessageBox "DDE1 to DDE2 Migration" "Migration Pre-Merge Analysis" "An analysis of the progress so far will be done to ascertain the quality of the final migration. No changes will be made on the destination database in this step.";
 
 	clear;	
-	
+
 fi
-
-showMessageBox "DDE1 to DDE2 Migration" "Migration Pre-Merge Analysis" "An analysis of the progress so far will be done to ascertain the quality of the final migration. No changes will be made on the destination database in this step.";
-
-clear;	
 
 cd "$ROOT/sources/dde2_migration_tool/code";
 
