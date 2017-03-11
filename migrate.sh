@@ -1255,6 +1255,10 @@ for i in $ARR; do
 	
 	fi
 
+	r=$j;
+	
+	j=$((r + 1));
+
 done
 
 if [ "$VALIDATE_MIGRATION" == "y" ]; then	
