@@ -217,61 +217,61 @@ fi
 
 if [ ${#RUBY} == 0 ]; then
 
-  showMessageBox "Environment Configuration" "Ruby Setup" "Ruby not found. Installing Ruby.";
+    showMessageBox "Environment Configuration" "Ruby Setup" "Ruby not found. Installing Ruby.";
 
-	clear;
-	
-	cd "$ROOT/dist/ruby";
-	
-	./setup.sh;
-	
-	if [ $? -ne 0 ]; then
-	
-		exit 1;
-	
-	fi		
-	
-	cd "$ROOT";
+    clear;
+
+    cd "$ROOT/dist/ruby";
+
+    ./setup.sh;
+
+    if [ $? -ne 0 ]; then
+
+        exit 1;
+
+    fi
+
+    cd "$ROOT";
 	
 fi
 
 if [ ${#MYSQL} == 0 ]; then
 
-  showMessageBox "Environment Configuration" "MySQL Setup" "MySQL not found. Installing MySQL.";
+    showMessageBox "Environment Configuration" "MySQL Setup" "MySQL not found. Installing MySQL.";
 
-	clear;
-	
-	cd "$ROOT/dist/mysql";
+    clear;
 
-	if [ $? -ne 0 ]; then
-	
-		exit 1;
-	
-	fi
+    cd "$ROOT/dist/mysql";
 
-	sudo dpkg -i --force-depends *.deb;
+    if [ $? -ne 0 ]; then
 
-	if [ $? -ne 0 ]; then
-	
-		exit 1;
-	
-	fi
+        exit 1;
 
-	cd "$ROOT";
+    fi
 
-	if [ $? -ne 0 ]; then
-	
-		exit 1;
-	
-	fi
+    sudo dpkg -i --force-depends *.deb;
 
-	cd "$ROOT";
+    if [ $? -ne 0 ]; then
+
+        exit 1;
+
+    fi
+
+    cd "$ROOT";
+
+    if [ $? -ne 0 ]; then
+
+        exit 1;
+
+    fi
+
+    cd "$ROOT";
 
 else
 
     showMessageBox "Environment Configuration" "MySQL Setup" "MySQL found: OK";
 
-		clear;
+    clear;
 		
 fi
 
@@ -279,149 +279,149 @@ if [ ${#COUCHDB} == 0 ]; then
 
     showMessageBox "Environment Configuration" "CouchDB Setup" "CouchDB not found. Installing CouchDB.";
 
-		clear;
-		
-		if [[ $online -eq 0 ]]; then
+    clear;
 
-				sudo apt-get install software-properties-common -y;
+    if [[ $online -eq 0 ]]; then
 
-				sudo add-apt-repository ppa:couchdb/stable -y;
+        sudo apt-get install software-properties-common -y;
 
-				sudo apt-get update;
+        sudo add-apt-repository ppa:couchdb/stable -y;
 
-				sudo apt-get remove couchdb couchdb-bin couchdb-common -yf;
+        sudo apt-get update;
 
-				sudo apt-get autoremove -yf;
+        sudo apt-get remove couchdb couchdb-bin couchdb-common -yf;
 
-				sudo apt-get install couchdb -y;
+        sudo apt-get autoremove -yf;
 
-				if [ $? -ne 0 ]; then
-	
-					exit 1;
-	
-				fi
+        sudo apt-get install couchdb -y;
 
-		else
+        if [ $? -ne 0 ]; then
 
-			cd ./dist/couchdb;
-			
-			if [ $? -ne 0 ]; then
-	
-				exit 1;
-	
-			fi
+            exit 1;
 
-			sudo dpkg -i --force-depends *.deb;
-			
-			if [ $? -ne 0 ]; then
-	
-				sudo service couchdb restart
+        fi
 
-				if [ $? -ne 0 ]; then
-	
-					exit 1;
-	
-				fi
+    else
 
-				curl localhost:5984
+        cd ./dist/couchdb;
 
-				if [ $? -ne 0 ]; then
-	
-					# Wait a bit and retry
-					sleep 10;
+        if [ $? -ne 0 ]; then
 
-					curl localhost:5984
+            exit 1;
 
-					if [ $? -ne 0 ]; then
-							
-						if [ $? -ne 0 ]; then
-	
-							# Wait a bit and retry
-							sleep 10;
+        fi
 
-							curl localhost:5984
+        sudo dpkg -i --force-depends *.deb;
 
-							if [ $? -ne 0 ]; then
-	
-								exit 1;
-	
-							fi
+        if [ $? -ne 0 ]; then
 
-						fi				
-	
-					fi
+            sudo service couchdb restart
 
-				fi				
+            if [ $? -ne 0 ]; then
 
-			fi
+                exit 1;
 
-			cd "$ROOT";
+            fi
 
-			if [ $? -ne 0 ]; then
-	
-				exit 1;
-	
-			fi
+            curl localhost:5984
 
-		fi
+            if [ $? -ne 0 ]; then
 
-		clear
+                # Wait a bit and retry
+                sleep 10;
 
-	  getUserData "Environment Configuration" "CouchDB Setup" "Enter CouchDB database usename: ";
-	  
-	  COUCHDB_DATABASE_USERNAME=$RETVAL;
-	  
-	  clear
-  
-	  getUserPassword "Environment Configuration" "CouchDB Setup" "Enter CouchDB database password for '$COUCHDB_DATABASE_USERNAME': ";
-	  
-	  COUCHDB_DATABASE_PASSWORD=$RETVAL;
+                curl localhost:5984
 
-		clear
+                if [ $? -ne 0 ]; then
 
-		curl -X PUT -H 'Content-Type: application/json' --data "\"$COUCHDB_DATABASE_PASSWORD\"" "http://localhost:5984/_config/admins/$COUCHDB_DATABASE_USERNAME"
+                    if [ $? -ne 0 ]; then
 
-		sudo sed -i 's/;port = 5984/port = '$COUCHDB_PORT'/g' /etc/couchdb/local.ini
+                        # Wait a bit and retry
+                        sleep 10;
 
-		if [ $? -ne 0 ]; then
-	
-			exit 1;
-	
-		fi
+                        curl localhost:5984
 
-		sudo sed -i 's/;bind_address = 127.0.0.1/bind_address = 0.0.0.0/g' /etc/couchdb/local.ini
+                        if [ $? -ne 0 ]; then
 
-		if [ $? -ne 0 ]; then
-	
-			exit 1;
-	
-		fi
+                            exit 1;
 
-		sudo service couchdb restart
+                        fi
 
-		if [ $? -ne 0 ]; then
-	
-			exit 1;
-	
-		fi
+                    fi
 
-		curl localhost:5984
+                fi
 
-		COUCHDB=$(command -v couchdb);
+            fi
 
-		echo
+        fi
+
+        cd "$ROOT";
+
+        if [ $? -ne 0 ]; then
+
+            exit 1;
+
+        fi
+
+    fi
+
+    clear
+
+    getUserData "Environment Configuration" "CouchDB Setup" "Enter CouchDB database usename: ";
+
+    COUCHDB_USERNAME=$RETVAL;
+
+    clear
+
+    getUserPassword "Environment Configuration" "CouchDB Setup" "Enter CouchDB database password for '$COUCHDB_USERNAME': ";
+
+    COUCHDB_PASSWORD=$RETVAL;
+
+    clear
+
+    curl -X PUT -H 'Content-Type: application/json' --data "\"$COUCHDB_PASSWORD\"" "http://localhost:5984/_config/admins/$COUCHDB_USERNAME"
+
+    sudo sed -i 's/;port = 5984/port = '$COUCHDB_PORT'/g' /etc/couchdb/local.ini
+
+    if [ $? -ne 0 ]; then
+
+        exit 1;
+
+    fi
+
+    sudo sed -i 's/;bind_address = 127.0.0.1/bind_address = 0.0.0.0/g' /etc/couchdb/local.ini
+
+    if [ $? -ne 0 ]; then
+
+        exit 1;
+
+    fi
+
+    sudo service couchdb restart
+
+    if [ $? -ne 0 ]; then
+
+        exit 1;
+
+    fi
+
+    curl localhost:5984
+
+    COUCHDB=$(command -v couchdb);
+
+    echo
 		
 else
     
 	  getUserData "Environment Configuration" "CouchDB Setup" "Enter CouchDB database usename: ";
 	  
-	  COUCHDB_DATABASE_USERNAME=$RETVAL;
+	  COUCHDB_USERNAME=$RETVAL;
 	  
 	  clear
   
-	  getUserPassword "Environment Configuration" "CouchDB Setup" "Enter CouchDB database password for '$COUCHDB_DATABASE_USERNAME': ";
+	  getUserPassword "Environment Configuration" "CouchDB Setup" "Enter CouchDB database password for '$COUCHDB_USERNAME': ";
 	  
-	  COUCHDB_DATABASE_PASSWORD=$RETVAL;
+	  COUCHDB_PASSWORD=$RETVAL;
 
 		clear
 
@@ -553,7 +553,7 @@ esac
 clear
 
 # Default DDE1 master database name
-DDE1_MASTER_DATABASE="dde1_migration_master";
+NPIDS_MYSQL_SOURCE_DATABASE="dde1_migration_master";
 
 # If dump selected to be used for loading, get MySQL server IP address, username and password
 if [ ${#DDE1_MASTER_SRC} -ne 0 ] && [ "$DDE1_MASTER_SRC" == "dump" ]; then
@@ -566,35 +566,35 @@ if [ ${#DDE1_MASTER_SRC} -ne 0 ] && [ "$DDE1_MASTER_SRC" == "dump" ]; then
 	
 	getUserData "Environment Configuration" "DDE1 Master Database Configuration" "Enter MySQL database host IP address to load data on [default: $HOST]: ";
 
-	MYSQL_DDE1_MASTER_HOST=$RETVAL;
+	NPIDS_MYSQL_SOURCE_HOST=$RETVAL;
 
 	clear			
 
-	if [ ${#MYSQL_DDE1_MASTER_HOST} == 0 ]; then
+	if [ ${#NPIDS_MYSQL_SOURCE_HOST} == 0 ]; then
 
-		MYSQL_DDE1_MASTER_HOST="$HOST";
+		NPIDS_MYSQL_SOURCE_HOST="$HOST";
 
 	fi
 
 	clear
 
-	if [ ${#MYSQL_DDE1_MASTER_HOST} == 0 ] && [ ${#HOST} != 0 ]; then
+	if [ ${#NPIDS_MYSQL_SOURCE_HOST} == 0 ] && [ ${#HOST} != 0 ]; then
 
-		MYSQL_DDE1_MASTER_HOST=$HOST;
+		NPIDS_MYSQL_SOURCE_HOST=$HOST;
 
 	fi
 
 	echo
 
-	getUserData "Environment Configuration" "DDE1 Master Database Configuration" "Enter MySQL username of the instance on '$MYSQL_DDE1_MASTER_HOST': ";
+	getUserData "Environment Configuration" "DDE1 Master Database Configuration" "Enter MySQL username of the instance on '$NPIDS_MYSQL_SOURCE_HOST': ";
 
-	MYSQL_DDE1_MASTER_USERNAME=$RETVAL;
+	NPIDS_MYSQL_SOURCE_USERNAME=$RETVAL;
 
 	clear			
 
-	getUserPassword "Environment Configuration" "DDE1 Master Database Configuration" "Enter MySQL password for '$MYSQL_DDE1_MASTER_USERNAME' on '$MYSQL_DDE1_MASTER_HOST': ";
+	getUserPassword "Environment Configuration" "DDE1 Master Database Configuration" "Enter MySQL password for '$NPIDS_MYSQL_SOURCE_USERNAME' on '$NPIDS_MYSQL_SOURCE_HOST': ";
 
-	MYSQL_DDE1_MASTER_PASSWORD=$RETVAL;
+	NPIDS_MYSQL_SOURCE_PASSWORD=$RETVAL;
 
 	clear
 
@@ -602,11 +602,11 @@ if [ ${#DDE1_MASTER_SRC} -ne 0 ] && [ "$DDE1_MASTER_SRC" == "dump" ]; then
 
 	if [ ${#DDE1_MASTER_DUMP} -gt 0 ] && [ -f "$DDE1_MASTER_DUMP" ]; then
 		
-    showMessageBox "Environment Configuration" "DDE1 Master Setup" "Dropping '$DDE1_MASTER_DATABASE' database if it exists on target machine to load supplied dump";
+    showMessageBox "Environment Configuration" "DDE1 Master Setup" "Dropping '$NPIDS_MYSQL_SOURCE_DATABASE' database if it exists on target machine to load supplied dump";
 
 		clear;				
 		
-		mysql -h $MYSQL_DDE1_MASTER_HOST -u $MYSQL_DDE1_MASTER_USERNAME -p$MYSQL_DDE1_MASTER_PASSWORD -e "DROP SCHEMA IF EXISTS $DDE1_MASTER_DATABASE";
+		mysql -h $NPIDS_MYSQL_SOURCE_HOST -u $NPIDS_MYSQL_SOURCE_USERNAME -p$NPIDS_MYSQL_SOURCE_PASSWORD -e "DROP SCHEMA IF EXISTS $NPIDS_MYSQL_SOURCE_DATABASE";
 				
 		if [ $? -ne 0 ]; then
 		
@@ -614,7 +614,7 @@ if [ ${#DDE1_MASTER_SRC} -ne 0 ] && [ "$DDE1_MASTER_SRC" == "dump" ]; then
 			
 		fi
 			
-		mysql -h $MYSQL_DDE1_MASTER_HOST -u $MYSQL_DDE1_MASTER_USERNAME -p$MYSQL_DDE1_MASTER_PASSWORD -e "CREATE SCHEMA $DDE1_MASTER_DATABASE";
+		mysql -h $NPIDS_MYSQL_SOURCE_HOST -u $NPIDS_MYSQL_SOURCE_USERNAME -p$NPIDS_MYSQL_SOURCE_PASSWORD -e "CREATE SCHEMA $NPIDS_MYSQL_SOURCE_DATABASE";
 				
 		if [ $? -ne 0 ]; then
 		
@@ -622,11 +622,11 @@ if [ ${#DDE1_MASTER_SRC} -ne 0 ] && [ "$DDE1_MASTER_SRC" == "dump" ]; then
 			
 		fi
 			
-    showMessageBox "Environment Configuration" "DDE1 Master Setup" "Loading provided dump into '$DDE1_MASTER_DATABASE' database";
+    showMessageBox "Environment Configuration" "DDE1 Master Setup" "Loading provided dump into '$NPIDS_MYSQL_SOURCE_DATABASE' database";
 
 		clear;	
 			
-		(pv -n $DDE1_MASTER_DUMP | mysql -h $MYSQL_DDE1_MASTER_HOST -u $MYSQL_DDE1_MASTER_USERNAME -p$MYSQL_DDE1_MASTER_PASSWORD $DDE1_MASTER_DATABASE) 2>&1 | dialog --gauge "Loading provided dump..." 6 50;
+		(pv -n $DDE1_MASTER_DUMP | mysql -h $NPIDS_MYSQL_SOURCE_HOST -u $NPIDS_MYSQL_SOURCE_USERNAME -p$NPIDS_MYSQL_SOURCE_PASSWORD $NPIDS_MYSQL_SOURCE_DATABASE) 2>&1 | dialog --gauge "Loading provided dump..." 6 50;
 		
 		if [ $? -ne 0 ]; then
 		
@@ -641,41 +641,41 @@ elif [ ${#DDE1_MASTER_SRC} -ne 0 ] && [ "$DDE1_MASTER_SRC" == "server" ]; then
 
 	getUserData "Environment Configuration" "DDE1 Master Database Configuration" "Enter MySQL database host IP address to fetch data from [default: $HOST]: ";
 
-	MYSQL_DDE1_MASTER_HOST=$RETVAL;
+	NPIDS_MYSQL_SOURCE_HOST=$RETVAL;
 
 	clear			
 
-	if [ ${#MYSQL_DDE1_MASTER_HOST} == 0 ]; then
+	if [ ${#NPIDS_MYSQL_SOURCE_HOST} == 0 ]; then
 
-		MYSQL_DDE1_MASTER_HOST="$HOST";
+		NPIDS_MYSQL_SOURCE_HOST="$HOST";
 
 	fi
 
 	clear
 
-	if [ ${#MYSQL_DDE1_MASTER_HOST} == 0 ] && [ ${#HOST} != 0 ]; then
+	if [ ${#NPIDS_MYSQL_SOURCE_HOST} == 0 ] && [ ${#HOST} != 0 ]; then
 
-		MYSQL_DDE1_MASTER_HOST=$HOST;
+		NPIDS_MYSQL_SOURCE_HOST=$HOST;
 
 	fi
 
 	echo
 
-	getUserData "Environment Configuration" "DDE1 Master Database Configuration" "Enter MySQL username of the instance on '$MYSQL_DDE1_MASTER_HOST': ";
+	getUserData "Environment Configuration" "DDE1 Master Database Configuration" "Enter MySQL username of the instance on '$NPIDS_MYSQL_SOURCE_HOST': ";
 
-	MYSQL_DDE1_MASTER_USERNAME=$RETVAL;
+	NPIDS_MYSQL_SOURCE_USERNAME=$RETVAL;
 
 	clear			
 
-	getUserPassword "Environment Configuration" "DDE1 Master Database Configuration" "Enter MySQL password for '$MYSQL_DDE1_MASTER_USERNAME' on '$MYSQL_DDE1_MASTER_HOST': ";
+	getUserPassword "Environment Configuration" "DDE1 Master Database Configuration" "Enter MySQL password for '$NPIDS_MYSQL_SOURCE_USERNAME' on '$NPIDS_MYSQL_SOURCE_HOST': ";
 
-	MYSQL_DDE1_MASTER_PASSWORD=$RETVAL;
+	NPIDS_MYSQL_SOURCE_PASSWORD=$RETVAL;
 
 	clear
 
-	getUserData "Environment Configuration" "DDE1 Master Database Configuration" "Enter MySQL DDE1 master database name of the instance on '$MYSQL_DDE1_MASTER_HOST': ";
+	getUserData "Environment Configuration" "DDE1 Master Database Configuration" "Enter MySQL DDE1 master database name of the instance on '$NPIDS_MYSQL_SOURCE_HOST': ";
 
-	DDE1_MASTER_DATABASE=$RETVAL;
+	NPIDS_MYSQL_SOURCE_DATABASE=$RETVAL;
 
 	clear			
 
@@ -696,7 +696,7 @@ esac
 clear
 
 # Default proxy database name in case it's not defined
-DDE1_PROXY_DATABASE="dde1_migration_proxy";
+COUCHDB_NPIDS_DATABASE="dde1_migration_proxy";
 
 # If dump selected, get MySQL server IP address, username and password
 if [ ${#DDE1_PROXY_SRC} -ne 0 ] && [ "$DDE1_PROXY_SRC" == "dump" ]; then
@@ -722,45 +722,45 @@ if [ ${#DDE1_PROXY_SRC} -ne 0 ] && [ "$DDE1_PROXY_SRC" == "dump" ]; then
 	
 	if [ ${#PROXY_AND_MASTER_COEXIST} -ne 0 ]; then
 	
-		MYSQL_DDE1_PROXY_HOST="$MYSQL_DDE1_MASTER_HOST";
+		TARGET_SITE_APP_HOST="$NPIDS_MYSQL_SOURCE_HOST";
 	
-		MYSQL_DDE1_PROXY_USERNAME="$MYSQL_DDE1_MASTER_USERNAME";
+		TARGET_SITE_APP_USERNAME="$NPIDS_MYSQL_SOURCE_USERNAME";
 		
-		MYSQL_DDE1_PROXY_PASSWORD="$MYSQL_DDE1_MASTER_PASSWORD";
+		TARGET_SITE_APP_PASSWORD="$NPIDS_MYSQL_SOURCE_PASSWORD";
 	
 	else
 	
 		getUserData "Environment Configuration" "DDE1 Proxy Database Configuration" "Enter MySQL database host IP address to load proxy data on [default: $HOST]: ";
 
-		MYSQL_DDE1_PROXY_HOST=$RETVAL;
+		TARGET_SITE_APP_HOST=$RETVAL;
 
 		clear			
 
-		if [ ${#MYSQL_DDE1_PROXY_HOST} == 0 ]; then
+		if [ ${#TARGET_SITE_APP_HOST} == 0 ]; then
 
-			MYSQL_DDE1_PROXY_HOST="$HOST";
+			TARGET_SITE_APP_HOST="$HOST";
 
 		fi
 
 		clear
 
-		if [ ${#MYSQL_DDE1_PROXY_HOST} == 0 ] && [ ${#HOST} != 0 ]; then
+		if [ ${#TARGET_SITE_APP_HOST} == 0 ] && [ ${#HOST} != 0 ]; then
 
-			MYSQL_DDE1_PROXY_HOST=$HOST;
+			TARGET_SITE_APP_HOST=$HOST;
 
 		fi
 
 		echo
 
-		getUserData "Environment Configuration" "DDE1 Proxy Database Configuration" "Enter MySQL username of the instance on '$MYSQL_DDE1_PROXY_HOST': ";
+		getUserData "Environment Configuration" "DDE1 Proxy Database Configuration" "Enter MySQL username of the instance on '$TARGET_SITE_APP_HOST': ";
 
-		MYSQL_DDE1_PROXY_USERNAME=$RETVAL;
+		TARGET_SITE_APP_USERNAME=$RETVAL;
 
 		clear			
 
-		getUserPassword "Environment Configuration" "DDE1 Proxy Database Configuration" "Enter MySQL password for '$MYSQL_DDE1_PROXY_USERNAME' on '$MYSQL_DDE1_PROXY_HOST': ";
+		getUserPassword "Environment Configuration" "DDE1 Proxy Database Configuration" "Enter MySQL password for '$TARGET_SITE_APP_USERNAME' on '$TARGET_SITE_APP_HOST': ";
 
-		MYSQL_DDE1_PROXY_PASSWORD=$RETVAL;
+		TARGET_SITE_APP_PASSWORD=$RETVAL;
 
 		clear
 
@@ -768,11 +768,11 @@ if [ ${#DDE1_PROXY_SRC} -ne 0 ] && [ "$DDE1_PROXY_SRC" == "dump" ]; then
 
 	if [ ${#DDE1_PROXY_DUMP} -gt 0 ] && [ -f "$DDE1_PROXY_DUMP" ]; then
 	
-	  showMessageBox "Environment Configuration" "DDE1 Proxy Setup" "Dropping '$DDE1_PROXY_DATABASE' database if it exists on target machine to load supplied dump";
+	  showMessageBox "Environment Configuration" "DDE1 Proxy Setup" "Dropping '$TARGET_SITE_DATABASE' database if it exists on target machine to load supplied dump";
 
 		clear;				
 	
-		mysql -h $MYSQL_DDE1_PROXY_HOST -u $MYSQL_DDE1_PROXY_USERNAME -p$MYSQL_DDE1_PROXY_PASSWORD -e "DROP SCHEMA IF EXISTS $DDE1_PROXY_DATABASE";
+		mysql -h $TARGET_SITE_APP_HOST -u $TARGET_SITE_APP_USERNAME -p$TARGET_SITE_APP_PASSWORD -e "DROP SCHEMA IF EXISTS $TARGET_SITE_DATABASE";
 	
 		if [ $? -ne 0 ]; then
 		
@@ -780,7 +780,7 @@ if [ ${#DDE1_PROXY_SRC} -ne 0 ] && [ "$DDE1_PROXY_SRC" == "dump" ]; then
 			
 		fi
 			
-		mysql -h $MYSQL_DDE1_PROXY_HOST -u $MYSQL_DDE1_PROXY_USERNAME -p$MYSQL_DDE1_PROXY_PASSWORD -e "CREATE SCHEMA $DDE1_PROXY_DATABASE";
+		mysql -h $TARGET_SITE_APP_HOST -u $TARGET_SITE_APP_USERNAME -p$TARGET_SITE_APP_PASSWORD -e "CREATE SCHEMA $TARGET_SITE_DATABASE";
 	
 		if [ $? -ne 0 ]; then
 		
@@ -788,11 +788,11 @@ if [ ${#DDE1_PROXY_SRC} -ne 0 ] && [ "$DDE1_PROXY_SRC" == "dump" ]; then
 			
 		fi
 			
-	  showMessageBox "Environment Configuration" "DDE1 Proxy Setup" "Loading provided dump into '$DDE1_PROXY_DATABASE' database";
+	  showMessageBox "Environment Configuration" "DDE1 Proxy Setup" "Loading provided dump into '$TARGET_SITE_DATABASE' database";
 
 		clear;	
 		
-		(pv -n $DDE1_PROXY_DUMP | mysql -h $MYSQL_DDE1_PROXY_HOST -u $MYSQL_DDE1_PROXY_USERNAME -p$MYSQL_DDE1_PROXY_PASSWORD $DDE1_PROXY_DATABASE) 2>&1 | dialog --gauge "Loading provided dump..." 6 50;
+		(pv -n $DDE1_PROXY_DUMP | mysql -h $TARGET_SITE_APP_HOST -u $TARGET_SITE_APP_USERNAME -p$TARGET_SITE_APP_PASSWORD $TARGET_SITE_DATABASE) 2>&1 | dialog --gauge "Loading provided dump..." 6 50;
 	
 		if [ $? -ne 0 ]; then
 		
@@ -820,53 +820,53 @@ elif [ ${#DDE1_PROXY_SRC} -ne 0 ] && [ "$DDE1_PROXY_SRC" == "server" ]; then
 	
 	if [ ${#PROXY_AND_MASTER_COEXIST} -ne 0 ]; then
 	
-		MYSQL_DDE1_PROXY_HOST="$MYSQL_DDE1_MASTER_HOST";
+		TARGET_SITE_APP_HOST="$NPIDS_MYSQL_SOURCE_HOST";
 	
-		MYSQL_DDE1_PROXY_USERNAME="$MYSQL_DDE1_MASTER_USERNAME";
+		TARGET_SITE_APP_USERNAME="$NPIDS_MYSQL_SOURCE_USERNAME";
 		
-		MYSQL_DDE1_PROXY_PASSWORD="$MYSQL_DDE1_MASTER_PASSWORD";
+		TARGET_SITE_APP_PASSWORD="$NPIDS_MYSQL_SOURCE_PASSWORD";
 	
 	else
 	
 		getUserData "Environment Configuration" "DDE1 Proxy Database Configuration" "Enter MySQL database host IP address to fetch proxy data from [default: $HOST]: ";
 
-		MYSQL_DDE1_PROXY_HOST=$RETVAL;
+		TARGET_SITE_APP_HOST=$RETVAL;
 
 		clear			
 
-		if [ ${#MYSQL_DDE1_PROXY_HOST} == 0 ]; then
+		if [ ${#TARGET_SITE_APP_HOST} == 0 ]; then
 
-			MYSQL_DDE1_PROXY_HOST="$HOST";
+			TARGET_SITE_APP_HOST="$HOST";
 
 		fi
 
 		clear
 
-		if [ ${#MYSQL_DDE1_PROXY_HOST} == 0 ] && [ ${#HOST} != 0 ]; then
+		if [ ${#TARGET_SITE_APP_HOST} == 0 ] && [ ${#HOST} != 0 ]; then
 
-			MYSQL_DDE1_PROXY_HOST=$HOST;
+			TARGET_SITE_APP_HOST=$HOST;
 
 		fi
 
 		echo
 
-		getUserData "Environment Configuration" "DDE1 Proxy Database Configuration" "Enter MySQL username of the instance on '$MYSQL_DDE1_PROXY_HOST': ";
+		getUserData "Environment Configuration" "DDE1 Proxy Database Configuration" "Enter MySQL username of the instance on '$TARGET_SITE_APP_HOST': ";
 
-		MYSQL_DDE1_PROXY_USERNAME=$RETVAL;
+		TARGET_SITE_APP_USERNAME=$RETVAL;
 
 		clear			
 
-		getUserPassword "Environment Configuration" "DDE1 Proxy Database Configuration" "Enter MySQL password for '$MYSQL_DDE1_PROXY_USERNAME' on '$MYSQL_DDE1_PROXY_HOST': ";
+		getUserPassword "Environment Configuration" "DDE1 Proxy Database Configuration" "Enter MySQL password for '$TARGET_SITE_APP_USERNAME' on '$TARGET_SITE_APP_HOST': ";
 
-		MYSQL_DDE1_PROXY_PASSWORD=$RETVAL;
+		TARGET_SITE_APP_PASSWORD=$RETVAL;
 
 		clear
 
 	fi
 
-	getUserData "Environment Configuration" "DDE1 Proxy Database Configuration" "Enter MySQL DDE1 proxy database name of the instance on '$MYSQL_DDE1_PROXY_HOST': ";
+	getUserData "Environment Configuration" "DDE1 Proxy Database Configuration" "Enter MySQL DDE1 proxy database name of the instance on '$TARGET_SITE_APP_HOST': ";
 
-	DDE1_PROXY_DATABASE=$RETVAL;
+	TARGET_SITE_DATABASE=$RETVAL;
 
 	clear			
 
@@ -887,7 +887,7 @@ esac
 clear
 
 # Default OpenMRS database name in case it's not defined
-OPENMRS_DATABASE="dde1_openmrs_production";
+TARGET_SITE_APP_DATABASE="dde1_openmrs_production";
 
 # If dump selected, get MySQL server IP address, username and password
 if [ ${#OPENMRS_SRC} -ne 0 ] && [ "$OPENMRS_SRC" == "dump" ]; then
@@ -913,45 +913,45 @@ if [ ${#OPENMRS_SRC} -ne 0 ] && [ "$OPENMRS_SRC" == "dump" ]; then
 	
 	if [ ${#PROXY_AND_MASTER_COEXIST} -ne 0 ]; then
 	
-		MYSQL_OPENMRS_HOST="$MYSQL_DDE1_MASTER_HOST";
+		MYSQL_HOST="$NPIDS_MYSQL_SOURCE_HOST";
 	
-		MYSQL_OPENMRS_USERNAME="$MYSQL_DDE1_MASTER_USERNAME";
+		MYSQL_USERNAME="$NPIDS_MYSQL_SOURCE_USERNAME";
 		
-		MYSQL_OPENMRS_PASSWORD="$MYSQL_DDE1_MASTER_PASSWORD";
+		MYSQL_PASSWORD="$NPIDS_MYSQL_SOURCE_PASSWORD";
 	
 	else
 	
 		getUserData "Environment Configuration" "MySQL OpenMRS Database Configuration" "Enter MySQL database host IP address to load OpenMRS application data on [default: $HOST]: ";
 
-		MYSQL_OPENMRS_HOST=$RETVAL;
+		MYSQL_HOST=$RETVAL;
 
 		clear			
 
-		if [ ${#MYSQL_OPENMRS_HOST} == 0 ]; then
+		if [ ${#MYSQL_HOST} == 0 ]; then
 
-			MYSQL_OPENMRS_HOST="$HOST";
+			MYSQL_HOST="$HOST";
 
 		fi
 
 		clear
 
-		if [ ${#MYSQL_OPENMRS_HOST} == 0 ] && [ ${#HOST} != 0 ]; then
+		if [ ${#MYSQL_HOST} == 0 ] && [ ${#HOST} != 0 ]; then
 
-			MYSQL_OPENMRS_HOST=$HOST;
+			MYSQL_HOST=$HOST;
 
 		fi
 
 		echo
 
-		getUserData "Environment Configuration" "MySQL OpenMRS Database Configuration" "Enter MySQL username of the instance on '$MYSQL_OPENMRS_HOST': ";
+		getUserData "Environment Configuration" "MySQL OpenMRS Database Configuration" "Enter MySQL username of the instance on '$MYSQL_HOST': ";
 
-		MYSQL_OPENMRS_USERNAME=$RETVAL;
+		MYSQL_USERNAME=$RETVAL;
 
 		clear			
 
-		getUserPassword "Environment Configuration" "MySQL OpenMRS Database Configuration" "Enter MySQL password for '$MYSQL_OPENMRS_USERNAME' on '$MYSQL_OPENMRS_HOST': ";
+		getUserPassword "Environment Configuration" "MySQL OpenMRS Database Configuration" "Enter MySQL password for '$MYSQL_USERNAME' on '$MYSQL_HOST': ";
 
-		MYSQL_OPENMRS_PASSWORD=$RETVAL;
+		MYSQL_PASSWORD=$RETVAL;
 
 		clear
 
@@ -959,11 +959,11 @@ if [ ${#OPENMRS_SRC} -ne 0 ] && [ "$OPENMRS_SRC" == "dump" ]; then
 
 	if [ ${#OPENMRS_DUMP} -gt 0 ] && [ -f "$OPENMRS_DUMP" ]; then
 		
-    showMessageBox "Environment Configuration" "MySQL Setup" "Dropping '$OPENMRS_DATABASE' database if it exists on target machine to load supplied dump";
+    showMessageBox "Environment Configuration" "MySQL Setup" "Dropping '$TARGET_SITE_APP_DATABASE' database if it exists on target machine to load supplied dump";
 
 		clear;				
 		
-		mysql -h $MYSQL_OPENMRS_HOST -u $MYSQL_OPENMRS_USERNAME -p$MYSQL_OPENMRS_PASSWORD -e "DROP SCHEMA IF EXISTS $OPENMRS_DATABASE";
+		mysql -h $MYSQL_HOST -u $MYSQL_USERNAME -p$MYSQL_PASSWORD -e "DROP SCHEMA IF EXISTS $TARGET_SITE_APP_DATABASE";
 		
 		if [ $? -ne 0 ]; then
 		
@@ -971,7 +971,7 @@ if [ ${#OPENMRS_SRC} -ne 0 ] && [ "$OPENMRS_SRC" == "dump" ]; then
 			
 		fi
 			
-		mysql -h $MYSQL_OPENMRS_HOST -u $MYSQL_OPENMRS_USERNAME -p$MYSQL_OPENMRS_PASSWORD -e "CREATE SCHEMA $OPENMRS_DATABASE";
+		mysql -h $MYSQL_HOST -u $MYSQL_USERNAME -p$MYSQL_PASSWORD -e "CREATE SCHEMA $TARGET_SITE_APP_DATABASE";
 		
 		if [ $? -ne 0 ]; then
 		
@@ -979,11 +979,11 @@ if [ ${#OPENMRS_SRC} -ne 0 ] && [ "$OPENMRS_SRC" == "dump" ]; then
 			
 		fi
 			
-    showMessageBox "Environment Configuration" "MySQL Setup" "Loading provided dump into '$OPENMRS_DATABASE' database";
+    showMessageBox "Environment Configuration" "MySQL Setup" "Loading provided dump into '$TARGET_SITE_APP_DATABASE' database";
 
 		clear;	
 			
-		(pv -n $OPENMRS_DUMP | mysql -h $MYSQL_OPENMRS_HOST -u $MYSQL_OPENMRS_USERNAME -p$MYSQL_OPENMRS_PASSWORD $OPENMRS_DATABASE) 2>&1 | dialog --gauge "Loading provided dump..." 6 50;
+		(pv -n $OPENMRS_DUMP | mysql -h $MYSQL_HOST -u $MYSQL_USERNAME -p$MYSQL_PASSWORD $TARGET_SITE_APP_DATABASE) 2>&1 | dialog --gauge "Loading provided dump..." 6 50;
 		
 		if [ $? -ne 0 ]; then
 		
@@ -1011,53 +1011,53 @@ elif [ ${#OPENMRS_SRC} -ne 0 ] && [ "$OPENMRS_SRC" == "server" ]; then
 	
 	if [ ${#PROXY_AND_MASTER_COEXIST} -ne 0 ]; then
 	
-		MYSQL_OPENMRS_HOST="$MYSQL_DDE1_MASTER_HOST";
+		MYSQL_HOST="$NPIDS_MYSQL_SOURCE_HOST";
 	
-		MYSQL_OPENMRS_USERNAME="$MYSQL_DDE1_MASTER_USERNAME";
+		MYSQL_USERNAME="$NPIDS_MYSQL_SOURCE_USERNAME";
 		
-		MYSQL_OPENMRS_PASSWORD="$MYSQL_DDE1_MASTER_PASSWORD";
+		MYSQL_PASSWORD="$NPIDS_MYSQL_SOURCE_PASSWORD";
 	
 	else
 	
 		getUserData "Environment Configuration" "MySQL OpenMRS Database Configuration" "Enter MySQL database host IP address to fetch OpenMRS application data from [default: $HOST]: ";
 
-		MYSQL_OPENMRS_HOST=$RETVAL;
+		MYSQL_HOST=$RETVAL;
 
 		clear			
 
-		if [ ${#MYSQL_OPENMRS_HOST} == 0 ]; then
+		if [ ${#MYSQL_HOST} == 0 ]; then
 
-			MYSQL_OPENMRS_HOST="$HOST";
+			MYSQL_HOST="$HOST";
 
 		fi
 
 		clear
 
-		if [ ${#MYSQL_OPENMRS_HOST} == 0 ] && [ ${#HOST} != 0 ]; then
+		if [ ${#MYSQL_HOST} == 0 ] && [ ${#HOST} != 0 ]; then
 
-			MYSQL_OPENMRS_HOST=$HOST;
+			MYSQL_HOST=$HOST;
 
 		fi
 
 		echo
 
-		getUserData "Environment Configuration" "MySQL OpenMRS Database Configuration" "Enter MySQL username of the instance on '$MYSQL_OPENMRS_HOST': ";
+		getUserData "Environment Configuration" "MySQL OpenMRS Database Configuration" "Enter MySQL username of the instance on '$MYSQL_HOST': ";
 
-		MYSQL_OPENMRS_USERNAME=$RETVAL;
+		MYSQL_USERNAME=$RETVAL;
 
 		clear			
 
-		getUserPassword "Environment Configuration" "MySQL OpenMRS Database Configuration" "Enter MySQL password for '$MYSQL_OPENMRS_USERNAME' on '$MYSQL_OPENMRS_HOST': ";
+		getUserPassword "Environment Configuration" "MySQL OpenMRS Database Configuration" "Enter MySQL password for '$MYSQL_USERNAME' on '$MYSQL_HOST': ";
 
-		MYSQL_OPENMRS_PASSWORD=$RETVAL;
+		MYSQL_PASSWORD=$RETVAL;
 
 		clear
 
 	fi
 
-	getUserData "Environment Configuration" "MySQL OpenMRS Database Configuration" "Enter MySQL OpenMRS database name of the instance on '$MYSQL_OPENMRS_HOST': ";
+	getUserData "Environment Configuration" "MySQL OpenMRS Database Configuration" "Enter MySQL OpenMRS database name of the instance on '$MYSQL_HOST': ";
 
-	OPENMRS_DATABASE=$RETVAL;
+	TARGET_SITE_APP_DATABASE=$RETVAL;
 
 	clear			
 
@@ -1083,26 +1083,61 @@ if [ $? -ne 0 ]; then
 
 fi
 
+COUCHDB_NPIDS_PREFIX="";
+COUCHDB_NPIDS_SUFFIX="";
+
+ARR=$(echo "$COUCHDB_NPIDS_DATABASE" | tr "_" "\n");
+
+j=0;
+
+for i in $ARR; do
+
+	if [ $j -eq 0 ]; then
+	
+		COUCHDB_NPIDS_PREFIX="$i";
+	
+	else
+	
+		if [ ${#COUCHDB_NPIDS_SUFFIX} -gt 0 ]; then
+		
+			COUCHDB_NPIDS_SUFFIX="$COUCHDB_NPIDS_SUFFIX""_""$i";
+		
+		else
+		
+			COUCHDB_NPIDS_SUFFIX="$i";
+		
+		fi
+	
+	fi
+
+	r=$j;
+	
+	j=$((r + 1));
+
+done
+
 ruby -ryaml -e 'config = YAML.load_file("'$ROOT'/sources/dde2_migration_tool/code/databases.yml"); \
-								config["npids_mysql_source"]["username"] = "'$MYSQL_DDE1_MASTER_USERNAME'"; \
-								config["npids_mysql_source"]["password"] = "'$MYSQL_DDE1_MASTER_PASSWORD'"; \
-								config["npids_mysql_source"]["host"] = "'$MYSQL_DDE1_MASTER_HOST'"; \
-								config["npids_mysql_source"]["database"] = "'$DDE1_MASTER_DATABASE'"; \
-								config["mysql"]["username"] = "'$MYSQL_OPENMRS_USERNAME'"; \
-								config["mysql"]["password"] = "'$MYSQL_OPENMRS_PASSWORD'"; \
-								config["mysql"]["host"] = "'$MYSQL_OPENMRS_HOST'"; \
+								config["npids_mysql_source"]["username"] = "'$NPIDS_MYSQL_SOURCE_USERNAME'"; \
+								config["npids_mysql_source"]["password"] = "'$NPIDS_MYSQL_SOURCE_PASSWORD'"; \
+								config["npids_mysql_source"]["host"] = "'$NPIDS_MYSQL_SOURCE_HOST'"; \
+								config["npids_mysql_source"]["database"] = "'$NPIDS_MYSQL_SOURCE_DATABASE'"; \
+								config["mysql"]["username"] = "'$MYSQL_USERNAME'"; \
+								config["mysql"]["password"] = "'$MYSQL_PASSWORD'"; \
+								config["mysql"]["host"] = "'$MYSQL_HOST'"; \
 								config["couchdb"]= { \
-																		"username" => "'$COUCHDB_DATABASE_USERNAME'", \
-																		"password" => "'$COUCHDB_DATABASE_PASSWORD'", \
-																		"host" => "'$COUCHDB_HOST'", \
-																		"port" => '$COUCHDB_PORT'}; \
-								config["target"]["databases"] = "'$OPENMRS_DATABASE'"; \
+                                            "npids_database" => "'$COUCHDB_NPIDS_DATABASE'", \
+                                            "person_database" => "'$COUCHDB_NPIDS_PREFIX'_person_'$COUCHDB_NPIDS_SUFFIX'", \
+                                            "username" => "'$COUCHDB_USERNAME'", \
+                                            "password" => "'$COUCHDB_PASSWORD'", \
+                                            "host" => "'$COUCHDB_HOST'", \
+                                            "port" => '$COUCHDB_PORT'}; \
+								config["target"]["databases"] = "'$TARGET_SITE_DATABASE'"; \
 								config["applications"] = {}; \
-								config["applications"]["'$OPENMRS_DATABASE'"] = { \
-																		"username" => "'$MYSQL_DDE1_PROXY_USERNAME'", \
-																		"password" => "'$MYSQL_DDE1_PROXY_PASSWORD'", \
-																		"host" => "'$MYSQL_DDE1_PROXY_HOST'", \
-																		"database" => "'$DDE1_PROXY_DATABASE'"}; \
+								config["applications"]["'$TARGET_SITE_DATABASE'"] = { \
+                                            "username" => "'$TARGET_SITE_APP_USERNAME'", \
+                                            "password" => "'$TARGET_SITE_APP_PASSWORD'", \
+                                            "host" => "'$TARGET_SITE_APP_HOST'", \
+                                            "database" => "'$TARGET_SITE_APP_DATABASE'"}; \
 								file = File.open("'$ROOT'/sources/dde2_migration_tool/code/databases.yml", "w"); \
 								file.write(config.to_yaml); \
 								file.close;'
@@ -1137,38 +1172,7 @@ if [ $? -ne 0 ]; then
 
 fi
 
-DDE1_PROXY_PREFIX="";
-DDE1_PROXY_SUFFIX="";
-
-ARR=$(echo "$DDE1_PROXY_DATABASE" | tr "_" "\n");
-
-j=0;
-
-for i in $ARR; do
-
-	if [ $j -eq 0 ]; then
-	
-		DDE1_PROXY_PREFIX="$i";
-	
-	else
-	
-		if [ ${#DDE1_PROXY_SUFFIX} -gt 0 ]; then
-		
-			DDE1_PROXY_SUFFIX="$DDE1_PROXY_SUFFIX""_""$i";
-		
-		else
-		
-			DDE1_PROXY_SUFFIX="$i";
-		
-		fi
-	
-	fi
-
-	r=$j;
-	
-	j=$((r + 1));
-
-done
+read -p "Press enter to continue...";
 
 if [ "$VALIDATE_MIGRATION" == "y" ]; then	
 
@@ -1207,16 +1211,16 @@ if [ "$VALIDATE_MIGRATION" == "y" ]; then
 	fi
 
 	ruby -ryaml -e 'config = YAML.load_file("'$ROOT'/sources/dde2_migration_validator/config/couchdb.yml"); \
-									config["production"]["username"] = "'$MYSQL_DDE1_PROXY_USERNAME'"; \
-									config["production"]["password"] = "'$MYSQL_DDE1_PROXY_PASSWORD'"; \
-									config["production"]["host"] = "'$MYSQL_DDE1_PROXY_HOST'"; \
-									config["production"]["prefix"] = "'$DDE1_PROXY_PREFIX'"; \
-									config["production"]["suffix"] = "'$DDE1_PROXY_SUFFIX'"; \
-									config["development"]["username"] = "'$MYSQL_DDE1_PROXY_USERNAME'"; \
-									config["development"]["password"] = "'$MYSQL_DDE1_PROXY_PASSWORD'"; \
-									config["development"]["host"] = "'$MYSQL_DDE1_PROXY_HOST'"; \
-									config["development"]["prefix"] = "'$DDE1_PROXY_PREFIX'"; \
-									config["development"]["suffix"] = "'$DDE1_PROXY_SUFFIX'"; \
+									config["production"]["username"] = "'$TARGET_SITE_APP_USERNAME'"; \
+									config["production"]["password"] = "'$TARGET_SITE_APP_PASSWORD'"; \
+									config["production"]["host"] = "'$TARGET_SITE_APP_HOST'"; \
+									config["production"]["prefix"] = "'$COUCHDB_NPIDS_PREFIX'"; \
+									config["production"]["suffix"] = "'$COUCHDB_NPIDS_SUFFIX'"; \
+									config["development"]["username"] = "'$TARGET_SITE_APP_USERNAME'"; \
+									config["development"]["password"] = "'$TARGET_SITE_APP_PASSWORD'"; \
+									config["development"]["host"] = "'$TARGET_SITE_APP_HOST'"; \
+									config["development"]["prefix"] = "'$COUCHDB_NPIDS_PREFIX'"; \
+									config["development"]["suffix"] = "'$COUCHDB_NPIDS_SUFFIX'"; \
 									file = File.open("'$ROOT'/sources/dde2_migration_validator/config/couchdb.yml", "w"); \
 									file.write(config.to_yaml); \
 									file.close;'
@@ -1236,14 +1240,14 @@ if [ "$VALIDATE_MIGRATION" == "y" ]; then
 	fi
 
 	ruby -ryaml -e 'config = YAML.load_file("'$ROOT'/sources/dde2_migration_validator/config/database.yml"); \
-									config["production"]["username"] = "'$MYSQL_DDE1_PROXY_USERNAME'"; \
-									config["production"]["password"] = "'$MYSQL_DDE1_PROXY_PASSWORD'"; \
-									config["production"]["host"] = "'$MYSQL_DDE1_PROXY_HOST'"; \
-									config["production"]["database"] = "'$DDE1_PROXY_DATABASE'"; \
-									config["development"]["username"] = "'$MYSQL_DDE1_PROXY_USERNAME'"; \
-									config["development"]["password"] = "'$MYSQL_DDE1_PROXY_PASSWORD'"; \
-									config["development"]["host"] = "'$MYSQL_DDE1_PROXY_HOST'"; \
-									config["development"]["database"] = "'$DDE1_PROXY_DATABASE'"; \
+									config["production"]["username"] = "'$TARGET_SITE_APP_USERNAME'"; \
+									config["production"]["password"] = "'$TARGET_SITE_APP_PASSWORD'"; \
+									config["production"]["host"] = "'$TARGET_SITE_APP_HOST'"; \
+									config["production"]["database"] = "'$TARGET_SITE_DATABASE'"; \
+									config["development"]["username"] = "'$TARGET_SITE_APP_USERNAME'"; \
+									config["development"]["password"] = "'$TARGET_SITE_APP_PASSWORD'"; \
+									config["development"]["host"] = "'$TARGET_SITE_APP_HOST'"; \
+									config["development"]["database"] = "'$TARGET_SITE_DATABASE'"; \
 									file = File.open("'$ROOT'/sources/dde2_migration_validator/config/database.yml", "w"); \
 									file.write(config.to_yaml); \
 									file.close;'
@@ -1344,7 +1348,7 @@ if [ "$SYNC_WITH_MASTER" == "y" ]; then
 
 	clear
 
-	RESULT=$(mysql -h $MYSQL_DDE1_PROXY_HOST -u $MYSQL_DDE1_PROXY_USERNAME -p$MYSQL_DDE1_PROXY_PASSWORD $DDE1_PROXY_DATABASE -e "SELECT COUNT(*) AS num FROM national_patient_identifiers"); 
+	RESULT=$(mysql -h $TARGET_SITE_APP_HOST -u $TARGET_SITE_APP_USERNAME -p$TARGET_SITE_APP_PASSWORD $TARGET_SITE_DATABASE -e "SELECT COUNT(*) AS num FROM national_patient_identifiers");
 
 	TMP=$(echo $RESULT | tr -d "num\ ");
 
@@ -1382,7 +1386,7 @@ if [ "$SYNC_WITH_MASTER" == "y" ]; then
 
 		START=$((GROUPSIZE * ROUND));
 
-		RESULT=$(mysql -h $MYSQL_DDE1_PROXY_HOST -u $MYSQL_DDE1_PROXY_USERNAME -p$MYSQL_DDE1_PROXY_PASSWORD $DDE1_PROXY_DATABASE -e "SELECT value FROM national_patient_identifiers LIMIT $START, $GROUPSIZE"); 
+		RESULT=$(mysql -h $TARGET_SITE_APP_HOST -u $TARGET_SITE_APP_USERNAME -p$TARGET_SITE_APP_PASSWORD $TARGET_SITE_DATABASE -e "SELECT value FROM national_patient_identifiers LIMIT $START, $GROUPSIZE");
 
 		CHOPPED=$(echo $RESULT | tr "value\ " "\ ");
 
@@ -1396,9 +1400,9 @@ if [ "$SYNC_WITH_MASTER" == "y" ]; then
 
 		NPIDS=$(ruby -rjson -e "r = []; j = JSON.parse(File.open('$ROOT/data/$ROUND.json', 'r').read); j['rows'].map.each{|e| r << e['doc']['_id']}; puts r.to_json")
 
-		curl -s -H "Content-Type: application/json" -X POST --data "{\"target\":\"$DDE1_PROXY_DATABASE\",\"source\":\"http://$MASTER_COUCHDB_HOST:$MASTER_COUCHDB_PORT/$MASTER_COUCHDB_DATABASE\", \"create_target\": true, \"doc_ids\":$NPIDS}" "http://$COUCHDB_DATABASE_USERNAME:$COUCHDB_DATABASE_PASSWORD@$COUCHDB_HOST:$COUCHDB_PORT/_replicate" -o "$ROOT/data/n.$ROUND.json" &
+		curl -s -H "Content-Type: application/json" -X POST --data "{\"target\":\"$COUCHDB_NPIDS_DATABASE\",\"source\":\"http://$MASTER_COUCHDB_HOST:$MASTER_COUCHDB_PORT/$MASTER_COUCHDB_DATABASE\", \"create_target\": true, \"doc_ids\":$NPIDS}" "http://$COUCHDB_USERNAME:$COUCHDB_PASSWORD@$COUCHDB_HOST:$COUCHDB_PORT/_replicate" -o "$ROOT/data/n.$ROUND.json" &
 
-		curl -s -H "Content-Type: application/json" -X POST --data "{\"target\":\""$DDE1_PROXY_PREFIX"_person_$DDE1_PROXY_SUFFIX\",\"source\":\"http://$MASTER_COUCHDB_HOST:$MASTER_COUCHDB_PORT/$MASTER_COUCHDB_PERSON_DATABASE\", \"create_target\": true, \"doc_ids\":$JSON}" "http://$COUCHDB_DATABASE_USERNAME:$COUCHDB_DATABASE_PASSWORD@$COUCHDB_HOST:$COUCHDB_PORT/_replicate" -o "$ROOT/data/p.$ROUND.json" &
+		curl -s -H "Content-Type: application/json" -X POST --data "{\"target\":\""$COUCHDB_NPIDS_PREFIX"_person_$COUCHDB_NPIDS_SUFFIX\",\"source\":\"http://$MASTER_COUCHDB_HOST:$MASTER_COUCHDB_PORT/$MASTER_COUCHDB_PERSON_DATABASE\", \"create_target\": true, \"doc_ids\":$JSON}" "http://$COUCHDB_USERNAME:$COUCHDB_PASSWORD@$COUCHDB_HOST:$COUCHDB_PORT/_replicate" -o "$ROOT/data/p.$ROUND.json" &
 
 	done
 
@@ -1484,6 +1488,8 @@ if [ $? -ne 0 ]; then
 
 fi
 
+read -p "Press enter to continue...";
+
 if [ "$VALIDATE_MIGRATION" == "y" ]; then	
 
 	if [ ${#FIREFOX} -gt 0 ]; then
@@ -1520,6 +1526,8 @@ fi
 
 ./main.rb -p;
 
+read -p "Press enter to continue...";
+
 showMessageBox "DDE1 to DDE2 Migration" "Migration Final Data Merge" "The migrated data will now be merged for production.";
 
 clear;	
@@ -1533,6 +1541,8 @@ if [ $? -ne 0 ]; then
 fi
 
 ./main.rb -o;
+
+read -p "Press enter to continue...";
 
 
 
