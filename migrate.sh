@@ -130,8 +130,16 @@ getUserData()
 getUserConfirmation()
 {
 	exec 3>&1
-	
-  RETVAL=$(dialog --clear --backtitle "$1" --title "$2" --yesno "$3" 10 30 2>&1 1>&3)
+
+  if [ $4 -gt 0 ]; then
+
+      RETVAL=$(dialog --clear --backtitle "$1" --defaultno --title "$2" --yesno "$3" 10 30 2>&1 1>&3)
+
+  else
+
+    RETVAL=$(dialog --clear --backtitle "$1" --title "$2" --yesno "$3" 10 30 2>&1 1>&3)
+
+  fi
   
   EXIT_CODE=$?
   
@@ -467,7 +475,7 @@ if [ ! -d "$ROOT/sources" ]; then
 
 fi
 
-getUserConfirmation "Environment Configuration" "Migration Validation Confirmation" "Would you want to validate the migration as well?";
+getUserConfirmation "Environment Configuration" "Migration Validation Confirmation" "Would you want to validate the migration as well?" 1;
 	
 case $EXIT_CODE in
 	0)
@@ -707,7 +715,7 @@ if [ ${#DDE1_PROXY_SRC} -ne 0 ] && [ "$DDE1_PROXY_SRC" == "dump" ]; then
 
 	clear;
 	
-	getUserConfirmation "Environment Configuration" "DDE1 Proxy Database Configuration" "Are the database connection settings for the DDE1 proxy server the same as those for the DDE1 master server?";
+	getUserConfirmation "Environment Configuration" "DDE1 Proxy Database Configuration" "Are the database connection settings for the DDE1 proxy server the same as those for the DDE1 master server?" 0;
 		
 	case $EXIT_CODE in
 		0)
@@ -805,7 +813,7 @@ if [ ${#DDE1_PROXY_SRC} -ne 0 ] && [ "$DDE1_PROXY_SRC" == "dump" ]; then
 # Else if server selected, get MySQL server IP address, username, password and database name
 elif [ ${#DDE1_PROXY_SRC} -ne 0 ] && [ "$DDE1_PROXY_SRC" == "server" ]; then
 
-	getUserConfirmation "Environment Configuration" "DDE1 Proxy Database Configuration" "Are the database connection settings for the DDE1 proxy server the same as those for the DDE1 master server?";
+	getUserConfirmation "Environment Configuration" "DDE1 Proxy Database Configuration" "Are the database connection settings for the DDE1 proxy server the same as those for the DDE1 master server?" 0;
 		
 	case $EXIT_CODE in
 		0)
@@ -898,7 +906,7 @@ if [ ${#OPENMRS_SRC} -ne 0 ] && [ "$OPENMRS_SRC" == "dump" ]; then
 
 	clear;
 	
-	getUserConfirmation "Environment Configuration" "MySQL OpenMRS Database Configuration" "Are the database connection settings for the OpenMRS application server the same as those for the DDE1 master server?";
+	getUserConfirmation "Environment Configuration" "MySQL OpenMRS Database Configuration" "Are the database connection settings for the OpenMRS application server the same as those for the DDE1 master server?" 0;
 		
 	case $EXIT_CODE in
 		0)
@@ -996,7 +1004,7 @@ if [ ${#OPENMRS_SRC} -ne 0 ] && [ "$OPENMRS_SRC" == "dump" ]; then
 # Else if server selected, get MySQL server IP address, username, password and database name
 elif [ ${#OPENMRS_SRC} -ne 0 ] && [ "$OPENMRS_SRC" == "server" ]; then
 
-	getUserConfirmation "Environment Configuration" "MySQL OpenMRS Database Configuration" "Are the database connection settings for the OpenMRS application server the same as those for the DDE1 master server?";
+	getUserConfirmation "Environment Configuration" "MySQL OpenMRS Database Configuration" "Are the database connection settings for the OpenMRS application server the same as those for the DDE1 master server?" 0;
 		
 	case $EXIT_CODE in
 		0)
@@ -1287,7 +1295,7 @@ if [ "$VALIDATE_MIGRATION" == "y" ]; then
 
 fi
 
-getUserConfirmation "Environment Configuration" "DDE2 Master Synchronization" "Would you like to synchronize with DDE2 Master Live Server before proceeding?";
+getUserConfirmation "Environment Configuration" "DDE2 Master Synchronization" "Would you like to synchronize with DDE2 Master Live Server before proceeding?" 0;
 	
 case $EXIT_CODE in
 	0)
