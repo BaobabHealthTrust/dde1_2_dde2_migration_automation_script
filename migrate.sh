@@ -1,5 +1,15 @@
 #!/usr/bin/env bash
 
+RELEASE=$(lsb_release -r | tr -d "Release:" | tr -d "[:space:]");
+
+if [ "$RELEASE" != "14.04" ]; then
+
+	echo "Only Ubuntu 14.04 currently supported. Aborting!";
+	
+	exit 1;
+
+fi
+
 ROOT=$(pwd);
 
 OS=$(uname -m);
