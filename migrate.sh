@@ -713,6 +713,9 @@ esac
 	  
 clear
 
+# Default DDE1 master database name
+TARGET_SITE_DATABASE="dde1_migration_proxy";
+
 # Default proxy database name in case it's not defined
 COUCHDB_NPIDS_DATABASE="dde1_migration_proxy";
 
