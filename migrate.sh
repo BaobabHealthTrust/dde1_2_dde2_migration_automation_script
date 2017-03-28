@@ -620,35 +620,33 @@ if [ ${#DDE1_MASTER_SRC} -ne 0 ] && [ "$DDE1_MASTER_SRC" == "dump" ]; then
 
 	if [ ${#DDE1_MASTER_DUMP} -gt 0 ] && [ -f "$DDE1_MASTER_DUMP" ]; then
 		
-    showMessageBox "Environment Configuration" "DDE1 Master Setup" "Dropping '$NPIDS_MYSQL_SOURCE_DATABASE' database if it exists on target machine to load supplied dump";
+		RESULT=`mysql -h $NPIDS_MYSQL_SOURCE_HOST -u $NPIDS_MYSQL_SOURCE_USERNAME -p$NPIDS_MYSQL_SOURCE_PASSWORD --skip-column-names -e "SHOW DATABASES LIKE '$NPIDS_MYSQL_SOURCE_DATABASE'"`
+		
+		if [ "$RESULT" == "$NPIDS_MYSQL_SOURCE_DATABASE" ]; then
 
-		clear;				
+			echo "Skipping database '$NPIDS_MYSQL_SOURCE_DATABASE' as it already exists!";
 		
-		mysql -h $NPIDS_MYSQL_SOURCE_HOST -u $NPIDS_MYSQL_SOURCE_USERNAME -p$NPIDS_MYSQL_SOURCE_PASSWORD -e "DROP SCHEMA IF EXISTS $NPIDS_MYSQL_SOURCE_DATABASE";
+		else
+		
+			mysql -h $NPIDS_MYSQL_SOURCE_HOST -u $NPIDS_MYSQL_SOURCE_USERNAME -p$NPIDS_MYSQL_SOURCE_PASSWORD -e "CREATE SCHEMA $NPIDS_MYSQL_SOURCE_DATABASE";
 				
-		if [ $? -ne 0 ]; then
+			if [ $? -ne 0 ]; then
 		
-			exit 1;
+				exit 1;
 			
-		fi
+			fi
 			
-		mysql -h $NPIDS_MYSQL_SOURCE_HOST -u $NPIDS_MYSQL_SOURCE_USERNAME -p$NPIDS_MYSQL_SOURCE_PASSWORD -e "CREATE SCHEMA $NPIDS_MYSQL_SOURCE_DATABASE";
-				
-		if [ $? -ne 0 ]; then
-		
-			exit 1;
-			
-		fi
-			
-    showMessageBox "Environment Configuration" "DDE1 Master Setup" "Loading provided dump into '$NPIDS_MYSQL_SOURCE_DATABASE' database";
+		  showMessageBox "Environment Configuration" "DDE1 Master Setup" "Loading provided dump into '$NPIDS_MYSQL_SOURCE_DATABASE' database";
 
-		clear;	
+			clear;	
 			
-		(pv -n $DDE1_MASTER_DUMP | mysql -h $NPIDS_MYSQL_SOURCE_HOST -u $NPIDS_MYSQL_SOURCE_USERNAME -p$NPIDS_MYSQL_SOURCE_PASSWORD $NPIDS_MYSQL_SOURCE_DATABASE) 2>&1 | dialog --gauge "Loading provided dump..." 6 50;
+			(pv -n $DDE1_MASTER_DUMP | mysql -h $NPIDS_MYSQL_SOURCE_HOST -u $NPIDS_MYSQL_SOURCE_USERNAME -p$NPIDS_MYSQL_SOURCE_PASSWORD $NPIDS_MYSQL_SOURCE_DATABASE) 2>&1 | dialog --gauge "Loading provided dump..." 6 50;
 		
-		if [ $? -ne 0 ]; then
+			if [ $? -ne 0 ]; then
 		
-			exit 1;
+				exit 1;
+			
+			fi
 			
 		fi
 			
@@ -789,35 +787,33 @@ if [ ${#DDE1_PROXY_SRC} -ne 0 ] && [ "$DDE1_PROXY_SRC" == "dump" ]; then
 
 	if [ ${#DDE1_PROXY_DUMP} -gt 0 ] && [ -f "$DDE1_PROXY_DUMP" ]; then
 	
-	  showMessageBox "Environment Configuration" "DDE1 Proxy Setup" "Dropping '$TARGET_SITE_DATABASE' database if it exists on target machine to load supplied dump";
+		RESULT=`mysql -h $TARGET_SITE_APP_HOST -u $TARGET_SITE_APP_USERNAME -p$TARGET_SITE_APP_PASSWORD --skip-column-names -e "SHOW DATABASES LIKE '$TARGET_SITE_DATABASE'"`
+		
+		if [ "$RESULT" == "$TARGET_SITE_DATABASE" ]; then
 
-		clear;				
-	
-		mysql -h $TARGET_SITE_APP_HOST -u $TARGET_SITE_APP_USERNAME -p$TARGET_SITE_APP_PASSWORD -e "DROP SCHEMA IF EXISTS $TARGET_SITE_DATABASE";
-	
-		if [ $? -ne 0 ]; then
+			echo "Skipping database '$TARGET_SITE_DATABASE' as it already exists!";
 		
-			exit 1;
-			
-		fi
-			
-		mysql -h $TARGET_SITE_APP_HOST -u $TARGET_SITE_APP_USERNAME -p$TARGET_SITE_APP_PASSWORD -e "CREATE SCHEMA $TARGET_SITE_DATABASE";
-	
-		if [ $? -ne 0 ]; then
+		else
 		
-			exit 1;
+			mysql -h $TARGET_SITE_APP_HOST -u $TARGET_SITE_APP_USERNAME -p$TARGET_SITE_APP_PASSWORD -e "CREATE SCHEMA $TARGET_SITE_DATABASE";
+	
+			if [ $? -ne 0 ]; then
+		
+				exit 1;
 			
-		fi
+			fi
 			
-	  showMessageBox "Environment Configuration" "DDE1 Proxy Setup" "Loading provided dump into '$TARGET_SITE_DATABASE' database";
+			showMessageBox "Environment Configuration" "DDE1 Proxy Setup" "Loading provided dump into '$TARGET_SITE_DATABASE' database";
 
-		clear;	
+			clear;	
 		
-		(pv -n $DDE1_PROXY_DUMP | mysql -h $TARGET_SITE_APP_HOST -u $TARGET_SITE_APP_USERNAME -p$TARGET_SITE_APP_PASSWORD $TARGET_SITE_DATABASE) 2>&1 | dialog --gauge "Loading provided dump..." 6 50;
+			(pv -n $DDE1_PROXY_DUMP | mysql -h $TARGET_SITE_APP_HOST -u $TARGET_SITE_APP_USERNAME -p$TARGET_SITE_APP_PASSWORD $TARGET_SITE_DATABASE) 2>&1 | dialog --gauge "Loading provided dump..." 6 50;
 	
-		if [ $? -ne 0 ]; then
+			if [ $? -ne 0 ]; then
 		
-			exit 1;
+				exit 1;
+			
+			fi
 			
 		fi
 			
@@ -980,35 +976,33 @@ if [ ${#OPENMRS_SRC} -ne 0 ] && [ "$OPENMRS_SRC" == "dump" ]; then
 
 	if [ ${#OPENMRS_DUMP} -gt 0 ] && [ -f "$OPENMRS_DUMP" ]; then
 		
-    showMessageBox "Environment Configuration" "MySQL Setup" "Dropping '$TARGET_SITE_APP_DATABASE' database if it exists on target machine to load supplied dump";
+		RESULT=`mysql -h $MYSQL_HOST -u $MYSQL_USERNAME -p$MYSQL_PASSWORD --skip-column-names -e "SHOW DATABASES LIKE '$TARGET_SITE_APP_DATABASE'"`
+		
+		if [ "$RESULT" == "$TARGET_SITE_APP_DATABASE" ]; then
 
-		clear;				
+			echo "Skipping database '$TARGET_SITE_APP_DATABASE' as it already exists!";
 		
-		mysql -h $MYSQL_HOST -u $MYSQL_USERNAME -p$MYSQL_PASSWORD -e "DROP SCHEMA IF EXISTS $TARGET_SITE_APP_DATABASE";
+		else
 		
-		if [ $? -ne 0 ]; then
+			mysql -h $MYSQL_HOST -u $MYSQL_USERNAME -p$MYSQL_PASSWORD -e "CREATE SCHEMA $TARGET_SITE_APP_DATABASE";
 		
-			exit 1;
+			if [ $? -ne 0 ]; then
+		
+				exit 1;
 			
-		fi
+			fi
 			
-		mysql -h $MYSQL_HOST -u $MYSQL_USERNAME -p$MYSQL_PASSWORD -e "CREATE SCHEMA $TARGET_SITE_APP_DATABASE";
-		
-		if [ $? -ne 0 ]; then
-		
-			exit 1;
-			
-		fi
-			
-    showMessageBox "Environment Configuration" "MySQL Setup" "Loading provided dump into '$TARGET_SITE_APP_DATABASE' database";
+		  showMessageBox "Environment Configuration" "MySQL Setup" "Loading provided dump into '$TARGET_SITE_APP_DATABASE' database";
 
-		clear;	
+			clear;	
 			
-		(pv -n $OPENMRS_DUMP | mysql -h $MYSQL_HOST -u $MYSQL_USERNAME -p$MYSQL_PASSWORD $TARGET_SITE_APP_DATABASE) 2>&1 | dialog --gauge "Loading provided dump..." 6 50;
+			(pv -n $OPENMRS_DUMP | mysql -h $MYSQL_HOST -u $MYSQL_USERNAME -p$MYSQL_PASSWORD $TARGET_SITE_APP_DATABASE) 2>&1 | dialog --gauge "Loading provided dump..." 6 50;
 		
-		if [ $? -ne 0 ]; then
+			if [ $? -ne 0 ]; then
 		
-			exit 1;
+				exit 1;
+			
+			fi
 			
 		fi
 			
